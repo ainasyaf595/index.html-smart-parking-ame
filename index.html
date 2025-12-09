@@ -5,173 +5,158 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Smart Parking Online AME</title>
 <style>
-/* ===== BODY ===== */
 body {
   font-family: Poppins, Arial, sans-serif;
   background: #e5e5e5;
-  text-align: center;
-  padding: 20px;
-  margin: 0;
+  margin:0;
+  padding:20px;
+  text-align:center;
 }
 
 h1 {
-  font-size: 2.2rem;
-  font-weight: bold;
-  margin-bottom: 25px;
-  color: #1f1f1f;
+  font-size:2rem;
+  margin-bottom:20px;
+  color:#1f1f1f;
 }
 
-/* ===== PARKING AREA ===== */
+/* PARKING AREA */
 .parking-area {
-  width: 95%;
-  max-width: 900px;
-  aspect-ratio: 16/11;
-  margin: auto;
-  background: #1f1f1f;
-  border: 4px solid #000;
-  border-radius: 12px;
-  position: relative;
-  overflow: hidden;
+  width:95%;
+  max-width:900px;
+  aspect-ratio:16/11;
+  margin:auto;
+  background:#1f1f1f;
+  border:4px solid #000;
+  border-radius:12px;
+  position:relative;
+  overflow:hidden;
 }
 
-/* ===== PARKING SLOTS ===== */
+/* SLOT */
 .slot {
-  width: 18%;
-  height: 25%;
-  border: 3px solid #fff;
-  border-radius: 6px;
-  position: absolute;
-  overflow: hidden;
-  transition: background 0.2s;
+  width:18%;
+  height:25%;
+  border:3px solid #fff;
+  border-radius:6px;
+  position:absolute;
+  overflow:hidden;
+  transition: background 0.5s;
 }
-
 .slot-label {
-  position: absolute;
-  top: 5px;
-  width: 100%;
-  text-align: center;
-  color: #fff;
-  font-size: 0.9rem;
-  font-weight: bold;
+  position:absolute;
+  top:5px;
+  width:100%;
+  text-align:center;
+  color:#fff;
+  font-size:0.9rem;
+  font-weight:bold;
 }
-
 .pillar {
-  position: absolute;
-  bottom: 5px;
-  right: 5px;
-  background: #fff;
-  color: #000;
-  border: 2px solid #000;
-  padding: 3px 6px;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  font-weight: bold;
+  position:absolute;
+  bottom:5px;
+  right:5px;
+  background:#fff;
+  color:#000;
+  border:2px solid #000;
+  padding:3px 6px;
+  border-radius:6px;
+  font-size:0.8rem;
+  font-weight:bold;
 }
 
-/* ===== CAR ICON ===== */
+/* CAR ICON */
 .car-icon {
-  width: 40%;
-  height: 60%;
-  background: #ffffff;
-  border-radius: 6px;
-  position: absolute;
-  top: 20%;
-  left: 30%;
-  opacity: 0;
+  width:40%;
+  height:60%;
+  background:#ffffff;
+  border-radius:6px;
+  position:absolute;
+  left:30%;
+  top:100%; /* start bawah jalan */
+  opacity:0;
   transition: all 1s ease-in-out;
 }
 
-/* ===== SLOT WARNA ===== */
-.slot.occupied {
-  background: #ff4d4d; /* Merah */
-}
+/* SLOT WARNA */
+.slot.occupied { background:#ff4d4d; }
+.slot.empty { background:#4CAF50; }
 
-.slot.empty {
-  background: #4CAF50; /* Hijau */
-}
-
-/* ===== ANIMASI KERETA ===== */
+/* ANIMASI KERETA MASUK SLOT */
 .slot.occupied .car-icon {
-  opacity: 1;
-  transform: translateY(0); /* kereta di slot */
+  opacity:1;
+  top:20%; /* kereta masuk slot */
 }
-
 .slot.empty .car-icon {
-  opacity: 0;
-  transform: translateY(-150%); /* kereta keluar atas */
+  opacity:0;
+  top:100%; /* kereta keluar ke jalan bawah */
 }
 
-/* ===== ROAD ===== */
+/* JALAN SIMPANG 3 */
 .road-vertical {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 15%;
-  height: 100%;
-  background: #2c2c2c;
-  border-left: 4px dashed #fff;
-  border-right: 4px dashed #fff;
-  z-index: 1;
+  position:absolute;
+  bottom:0;
+  left:50%;
+  transform:translateX(-50%);
+  width:15%;
+  height:60%;
+  background:#2c2c2c;
+  border-left:4px dashed #fff;
+  border-right:4px dashed #fff;
+  z-index:1;
+}
+.road-horizontal {
+  position:absolute;
+  top:0;
+  left:0;
+  width:100%;
+  height:15%;
+  background:#2c2c2c;
+  border-top:4px dashed #fff;
+  border-bottom:4px dashed #fff;
+  z-index:1;
 }
 
-.road-horizontal-left, .road-horizontal-right {
-  position: absolute;
-  top: 40%;
-  width: 50%;
-  height: 12%;
-  background: #2c2c2c;
-  border-top: 4px dashed #fff;
-  border-bottom: 4px dashed #fff;
-  z-index: 1;
-}
-
-.road-horizontal-left { left: 0; }
-.road-horizontal-right { right: 0; }
-
-/* ===== ARROW ===== */
+/* ANAK PANAH */
 .arrow {
-  position: absolute;
-  width: 0;
-  height: 0;
-  border-left: 15px solid transparent;
-  border-right: 15px solid transparent;
-  border-bottom: 25px solid #fff;
-  z-index: 2;
+  position:absolute;
+  width:0;
+  height:0;
+  border-left:15px solid transparent;
+  border-right:15px solid transparent;
+  border-bottom:25px solid #fff;
+  z-index:2;
 }
+.arrow-down { bottom:60%; left:50%; transform:translateX(-50%) rotate(0deg); }
 
-.arrow-down { bottom: 40%; left: 50%; transform: translateX(-50%) rotate(0deg); }
-.arrow-left { top: 38%; left: 10%; transform: rotate(270deg); }
-.arrow-right { top: 38%; right: 10%; transform: rotate(90deg); }
-
-/* ===== STATUS PANEL ===== */
+/* STATUS PANEL */
 .status-box {
-  position: fixed;
-  right: 20px;
-  bottom: 20px;
-  padding: 15px 25px;
-  font-size: 1.2rem;
-  background: #1f1f1f;
-  color: white;
-  border: 3px solid #000;
-  border-radius: 12px;
-  font-weight: bold;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  position:fixed;
+  right:20px;
+  bottom:20px;
+  padding:15px 25px;
+  font-size:1.2rem;
+  background:#1f1f1f;
+  color:white;
+  border:3px solid #000;
+  border-radius:12px;
+  font-weight:bold;
+  box-shadow:0 4px 12px rgba(0,0,0,0.4);
 }
 
 /* RESPONSIVE */
-@media (max-width: 600px) {
-  .slot-label { font-size: 0.7rem; }
-  .pillar { font-size: 0.6rem; padding: 2px 5px; }
-  .status-box { font-size: 1rem; padding: 10px 15px; }
+@media(max-width:600px){
+  .slot-label{font-size:0.7rem;}
+  .pillar{font-size:0.6rem;padding:2px 5px;}
+  .status-box{font-size:1rem;padding:10px 15px;}
 }
 </style>
 </head>
 <body>
+
 <h1>SMART PARKING ONLINE AME</h1>
 
 <div class="parking-area">
-  <!-- PARKING SLOTS -->
+  <!-- SLOT -->
   <div id="slot1" class="slot"></div>
   <div id="slot2" class="slot"></div>
   <div id="slot3" class="slot"></div>
@@ -180,84 +165,79 @@ h1 {
 
   <!-- JALAN -->
   <div class="road-vertical"></div>
-  <div class="road-horizontal-left"></div>
-  <div class="road-horizontal-right"></div>
+  <div class="road-horizontal"></div>
 
   <!-- ANAK PANAH -->
   <div class="arrow arrow-down"></div>
-  <div class="arrow arrow-left"></div>
-  <div class="arrow arrow-right"></div>
 </div>
 
-<!-- EMPTY COUNT PANEL -->
+<!-- PANEL -->
 <div class="status-box">
   Petak Kosong: <span id="count">0</span> / 5
 </div>
 
 <script>
-// Tentukan posisi slot
+// Posisi slot
 const slotPositions = {
-  slot1: { left: '5%', top: '5%' },
-  slot2: { left: '25%', top: '5%' },
-  slot3: { left: '45%', top: '5%' },
-  slot4: { left: '65%', top: '5%' },
-  slot5: { left: '85%', top: '5%' },
+  slot1:{left:'5%', top:'5%'},
+  slot2:{left:'25%', top:'5%'},
+  slot3:{left:'45%', top:'5%'},
+  slot4:{left:'65%', top:'5%'},
+  slot5:{left:'85%', top:'5%'},
 };
 
 // Inisialisasi slot
-Object.keys(slotPositions).forEach(id => {
-  const div = document.getElementById(id);
-  div.style.left = slotPositions[id].left;
-  div.style.top = slotPositions[id].top;
+Object.keys(slotPositions).forEach(id=>{
+  const div=document.getElementById(id);
+  div.style.left=slotPositions[id].left;
+  div.style.top=slotPositions[id].top;
 
-  // Label
-  const label = document.createElement('div');
-  label.className = 'slot-label';
-  label.innerText = id.toUpperCase();
+  const label=document.createElement('div');
+  label.className='slot-label';
+  label.innerText=id.toUpperCase();
   div.appendChild(label);
 
-  // Pillar
-  const pillar = document.createElement('span');
-  pillar.className = 'pillar';
-  pillar.innerText = id.replace('slot', '');
+  const pillar=document.createElement('span');
+  pillar.className='pillar';
+  pillar.innerText=id.replace('slot','');
   div.appendChild(pillar);
 
-  // Car Icon
-  const car = document.createElement('div');
-  car.className = 'car-icon';
+  const car=document.createElement('div');
+  car.className='car-icon';
   div.appendChild(car);
 });
 
-// Fetch data dari Firebase
-async function loadData() {
-  try {
-    const url = "https://smart-parking-aee-default-rtdb.asia-southeast1.firebasedatabase.app/parking.json";
-    const res = await fetch(url);
-    const data = await res.json();
+// Fetch data Firebase
+async function loadData(){
+  try{
+    const url="https://smart-parking-aee-default-rtdb.asia-southeast1.firebasedatabase.app/parking.json";
+    const res=await fetch(url);
+    const data=await res.json();
 
-    Object.keys(data).forEach(id => {
-      const div = document.getElementById(id);
-      if (!div) return;
+    Object.keys(data).forEach(id=>{
+      const div=document.getElementById(id);
+      if(!div) return;
 
-      if (data[id].status === 'occupied') {
+      if(data[id].status==='occupied'){
         div.classList.add('occupied');
         div.classList.remove('empty');
-      } else {
+      } else{
         div.classList.remove('occupied');
         div.classList.add('empty');
       }
     });
 
-    const count = Object.values(data).filter(slot => slot.status === 'empty').length;
-    document.getElementById('count').innerText = count;
+    const count=Object.values(data).filter(slot=>slot.status==='empty').length;
+    document.getElementById('count').innerText=count;
 
-  } catch (err) {
-    console.error("Gagal ambil data:", err);
+  }catch(err){
+    console.error("Gagal ambil data:",err);
   }
 }
 
-setInterval(loadData, 1000);
+setInterval(loadData,1000);
 loadData();
 </script>
+
 </body>
 </html>
