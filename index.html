@@ -1,0 +1,76 @@
+d"}
+<html>
+<head>
+    <title>Smart Parking Live</title>
+    <style>
+        .slot {
+            width: 120px;
+            height: 160px;
+            background: green;
+            margin: 10px;
+            display: inline-block;
+            font-size: 20px;
+            text-align: center;
+            line-height: 160px;
+            color: white;
+            border-radius: 12px;
+        }
+        .occupied { background: red !important; }
+        .empty { background: green !important; }
+    </style>
+</head>
+<body>
+
+    <h1>Live Parking Status</h1>
+
+    <div id="slot1" class="slot">Slot 1</div>
+    <div id="slot2" class="slot">Slot 2</div>
+    <div id="slot3" class="slot">Slot 3</div>
+    <div id="slot4" class="slot">Slot 4</div>
+    <div id="slot5" class="slot">Slot 5</div>
+
+    <!-- Firebase v8 (PALING MUDAH) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <script>
+        // 🔥 FIREBASE CONFIG MON
+        var firebaseConfig = {
+            apiKey: "AIzaSyA_y99lXjFkhFMjmeUg-VcI8XtAwH7DLE",
+            authDomain: "smart-parking-aee.firebaseapp.com",
+            databaseURL: "https://smart-parking-aee-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "smart-parking-aee",
+            storageBucket: "smart-parking-aee.appspot.com",
+            messagingSenderId: "851691621322",
+            appId: "1:851691621322:web:a9b70e5bb35e6728eda795"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        var db = firebase.database();
+
+        // Fungsi update warna slot
+        function updateSlot(slot, status) {
+            const box = document.getElementById(slot);
+            if (status === "occupied") {
+                box.classList.add("occupied");
+                box.classList.remove("empty");
+            } else {
+                box.classList.add("empty");
+                box.classList.remove("occupied");
+            }
+        }
+
+        // Live listener
+        db.ref().on("value", snap => {
+            let data = snap.val();
+
+            updateSlot("slot1", data.slot1.status);
+            updateSlot("slot2", data.slot2.status);
+            updateSlot("slot3", data.slot3.status);
+            updateSlot("slot4", data.slot4.status || "empty");
+            updateSlot("slot5", data.slot5?.status || "empty");
+        });
+    </script>
+
+</body>
+</ht
