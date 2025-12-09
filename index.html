@@ -60,4 +60,215 @@
     }
 
     /* SLOT LABEL */
-    .
+    .slot-label {
+      position: absolute;
+      top: 5px;
+      width: 100%;
+      text-align: center;
+      color: #fff;
+      font-size: 15px;
+      font-weight: bold;
+    }
+
+    /* PILLAR NUMBER */
+    .pillar {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      background: #fff;
+      color: #000;
+      border: 2px solid #000;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    /* ===== CAR ICON ===== */
+    .car-icon {
+      width: 70px;
+      height: 120px;
+      background: #ffffff;
+      margin: auto;
+      border-radius: 8px;
+      position: absolute;
+      top: 40px;
+      left: 30px;
+    }
+
+    /* ===== STATUS PANEL ===== */
+    .status-box {
+      position: fixed;
+      right: 40px;
+      bottom: 40px;
+      padding: 15px 30px;
+      font-size: 22px;
+      background: #1f1f1f;
+      color: white;
+      border: 3px solid #000;
+      border-radius: 12px;
+      font-weight: bold;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+    }
+
+    /* ===== JALAN BERSAMBUNG ===== */
+    .road-vertical {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 140px;
+      height: 300px;
+      background: #2c2c2c;
+      border-left: 4px dashed #fff;
+      border-right: 4px dashed #fff;
+      z-index: 1;
+    }
+
+    .road-horizontal-left {
+      position: absolute;
+      top: 200px;
+      left: 0;
+      width: 50%;
+      height: 120px;
+      background: #2c2c2c;
+      border-top: 4px dashed #fff;
+      border-bottom: 4px dashed #fff;
+      z-index: 1;
+    }
+
+    .road-horizontal-right {
+      position: absolute;
+      top: 200px;
+      right: 0;
+      width: 50%;
+      height: 120px;
+      background: #2c2c2c;
+      border-top: 4px dashed #fff;
+      border-bottom: 4px dashed #fff;
+      z-index: 1;
+    }
+
+    /* ===== ANAK PANAH ===== */
+    .arrow {
+      position: absolute;
+      width: 0;
+      height: 0;
+      border-left: 15px solid transparent;
+      border-right: 15px solid transparent;
+      border-bottom: 25px solid #fff;
+      z-index: 2;
+    }
+
+    .arrow-down {
+      bottom: 280px;
+      left: 50%;
+      transform: translateX(-50%) rotate(0deg);
+    }
+
+    .arrow-left {
+      top: 230px;
+      left: 120px;
+      transform: rotate(270deg);
+    }
+
+    .arrow-right {
+      top: 230px;
+      right: 120px;
+      transform: rotate(90deg);
+    }
+
+    /* ===== SLOT STATUS ===== */
+    .slot.occupied .car-icon {
+      display: block;
+    }
+
+    .slot:not(.occupied) .car-icon {
+      display: none;
+    }
+  </style>
+
+  <script>
+    async function loadData() {
+      const url =
+        "https://smart-parking-aee-default-rtdb.asia-southeast1.firebasedatabase.app/parking.json";
+
+      const res = await fetch(url);
+      const data = await res.json();
+
+      Object.keys(data).forEach(slotId => {
+        updateSlot(slotId, data[slotId].status);
+      });
+
+      updateEmptyCount(data);
+    }
+
+    function updateSlot(id, status) {
+      const div = document.getElementById(id);
+      div.classList.toggle("occupied", status === "occupied");
+
+      // Label
+      if (!div.querySelector(".slot-label")) {
+        const label = document.createElement("div");
+        label.className = "slot-label";
+        label.innerText = id.toUpperCase();
+        div.appendChild(label);
+      }
+
+      // Pillar
+      if (!div.querySelector(".pillar")) {
+        const num = id.replace("slot", "");
+        const pillar = document.createElement("span");
+        pillar.className = "pillar";
+        pillar.innerText = num;
+        div.appendChild(pillar);
+      }
+
+      // Car icon
+      if (!div.querySelector(".car-icon")) {
+        const car = document.createElement("div");
+        car.className = "car-icon";
+        div.appendChild(car);
+      }
+    }
+
+    function updateEmptyCount(data) {
+      const count = Object.values(data).filter(slot => slot.status === "empty").length;
+      document.getElementById("count").innerText = count;
+    }
+
+    setInterval(loadData, 1000);
+  </script>
+</head>
+
+<body>
+  <h1>SMART PARKING ONLINE AME</h1>
+
+  <div class="parking-area">
+
+    <!-- PARKING SLOTS -->
+    <div id="slot1" class="slot"></div>
+    <div id="slot2" class="slot"></div>
+    <div id="slot3" class="slot"></div>
+    <div id="slot4" class="slot"></div>
+    <div id="slot5" class="slot"></div>
+
+    <!-- JALAN -->
+    <div class="road-vertical"></div>
+    <div class="road-horizontal-left"></div>
+    <div class="road-horizontal-right"></div>
+
+    <!-- ANAK PANAH -->
+    <div class="arrow arrow-down"></div>
+    <div class="arrow arrow-left"></div>
+    <div class="arrow arrow-right"></div>
+
+  </div>
+
+  <!-- EMPTY COUNT PANEL -->
+  <div class="status-box">
+    Petak Kosong: <span id="count">0</span> / 5
+  </div>
+
+</body>
+</html>
