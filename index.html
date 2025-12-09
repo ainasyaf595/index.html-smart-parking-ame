@@ -19,14 +19,13 @@
 
     /* BORDER BESAR */
     .parking-area {
-      width: 950px;
+      width: 900px;
+      height: 600px;
       margin: auto;
-      border: 5px solid #222;
-      padding: 25px;
-      display: flex;
-      justify-content: space-between;
-      background: white;
-      border-radius: 10px;
+      border: 4px solid #222;
+      background: #ffffff;
+      border-radius: 12px;
+      position: relative;
     }
 
     /* SLOT PARKING */
@@ -38,33 +37,79 @@
       color: white;
       font-size: 18px;
       font-weight: bold;
-      position: relative;
-      line-height: 140px;
-      transition: 0.01s;
+      position: absolute;
+      text-align: center;
+      overflow: hidden;
     }
 
-    .slot:hover {
-      transform: scale(1.00);
+    /* Kedudukan slot */
+    #slot1 { left: 50px;  top: 50px; }
+    #slot2 { left: 210px; top: 50px; }
+    #slot3 { left: 370px; top: 50px; }
+    #slot4 { left: 530px; top: 50px; }
+    #slot5 { left: 690px; top: 50px; }
+
+    /* ICON KERETA */
+    .car-icon {
+      font-size: 55px;
+      position: absolute;
+      top: 55px;
+      left: 36px;
     }
 
-    /* KOTAK TIANG KECIL */
+    /* KOTAK TIANG */
     .pillar {
       position: absolute;
       bottom: 8px;
       right: 8px;
       background: #fff;
-      border: 1px solid #000;
-      padding: 3px 6px;
-      border-radius: 4px;
+      border: 2px solid #000;
+      padding: 6px 10px;
+      border-radius: 6px;
       font-weight: bold;
-      color: white;
+      color: black;
     }
 
-    /* PAPARAN KOSONG */
+    /* GAMBARAN JALAN UTAMA DARI BAWAH */
+    .road-main {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 140px;
+      height: 260px;
+      background: #2f2f2f;
+      border-top: 5px solid yellow;
+    }
+
+    /* JALAN CABANG – KIRI DAN KANAN */
+    .road-left, .road-right {
+      position: absolute;
+      top: 180px;
+      width: 350px;
+      height: 80px;
+      background: #2f2f2f;
+      border-bottom: 5px solid yellow;
+    }
+    .road-left { left: 0; }
+    .road-right { right: 0; }
+
+    /* ARAH ARROW */
+    .arrow {
+      font-size: 40px;
+      position: absolute;
+      color: yellow;
+    }
+
+    .arrow-main { bottom: 170px; left: 50%; transform: translateX(-50%); }
+    .arrow-left { top: 185px; left: 200px; transform: rotate(180deg); }
+    .arrow-right { top: 185px; right: 200px; }
+
+    /* PAPARAN JUMLAH KOSONG */
     .status-box {
       position: fixed;
       right: 40px;
-      bottom: 80px;
+      bottom: 40px;
       padding: 15px 25px;
       font-size: 20px;
       background: white;
@@ -82,32 +127,42 @@
       const res = await fetch(url);
       const data = await res.json();
 
-      // Update setiap slot
+      // Update slot
       updateSlot("slot1", data.slot1.status);
       updateSlot("slot2", data.slot2.status);
       updateSlot("slot3", data.slot3.status);
       updateSlot("slot4", data.slot4.status);
       updateSlot("slot5", data.slot5.status);
 
-      // Update jumlah petak kosong
       updateEmptyCount(data);
     }
 
     function updateSlot(id, status) {
       const div = document.getElementById(id);
 
+      // Clear all inner content first
+      div.innerHTML = "";
+
+      // Status warna
       if (status === "occupied") {
         div.style.background = "#ff4d4d";
-        div.innerHTML = id.toUpperCase() + "<br>Occupied";
+
+        // Add car icon
+        div.innerHTML += `<div class='car-icon'>🚗</div>`;
       } else {
         div.style.background = "#32cd32";
-        div.innerHTML = id.toUpperCase() + "<br>Empty";
       }
+
+      // Add slot label
+      div.innerHTML += id.toUpperCase();
+
+      // Add pillar number
+      const num = id.replace("slot", "");
+      div.innerHTML += `<span class="pillar">${num}</span>`;
     }
 
     function updateEmptyCount(data) {
       let count = 0;
-
       if (data.slot1.status === "empty") count++;
       if (data.slot2.status === "empty") count++;
       if (data.slot3.status === "empty") count++;
@@ -126,28 +181,28 @@
 
   <h1>SMART PARKING ONLINE AME</h1>
 
-  <!-- BORDER UTAMA -->
   <div class="parking-area">
 
-    <div id="slot1" class="slot">
-      <span class="pillar">1</span>
-    </div>
+    <!-- SLOT -->
+    <div id="slot1" class="slot"><span class="pillar">1</span></div>
+    <div id="slot2" class="slot"><span class="pillar">2</span></div>
+    <div id="slot3" class="slot"><span class="pillar">3</span></div>
+    <div id="slot4" class="slot"><span class="pillar">4</span></div>
+    <div id="slot5" class="slot"><span class="pillar">5</span></div>
 
-    <div id="slot2" class="slot">
-      <span class="pillar">2</span>
-    </div>
+    <!-- JALAN UTAMA -->
+    <div class="road-main"></div>
 
-    <div id="slot3" class="slot">
-      <span class="pillar">3</span>
-    </div>
+    <!-- ARAH UTAMA -->
+    <div class="arrow arrow-main">⬆️</div>
 
-    <div id="slot4" class="slot">
-      <span class="pillar">4</span>
-    </div>
+    <!-- CABANG JALAN -->
+    <div class="road-left"></div>
+    <div class="road-right"></div>
 
-    <div id="slot5" class="slot">
-      <span class="pillar">5</span>
-    </div>
+    <!-- ARAH CABANG -->
+    <div class="arrow arrow-left">➡️</div>
+    <div class="arrow arrow-right">➡️</div>
 
   </div>
 
