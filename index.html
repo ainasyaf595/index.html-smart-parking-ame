@@ -1,250 +1,53 @@
 <!DOCTYPE html>
-<html lang="ms">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Smart Parking Online AME</title>
+  <title>Smart Parking Live</title>
+  <style>
+    body { font-family: Arial; text-align: center; }
+    .slot {
+      width: 120px; height: 120px;
+      margin: 10px; display: inline-block;
+      border-radius: 10px; color: white;
+      line-height: 120px; font-size: 20px;
+      font-weight: bold;
+    }
+  </style>
+  <script>
+    async function loadData() {
+      const url = "https://smart-parking-aee-default-rtdb.asia-southeast1.firebasedatabase.app/parking.json";
 
-<style>
-body {
-  font-family: Poppins, Arial, sans-serif;
-  background:#e5e5e5;
-  margin:0;
-  padding:20px;
-  text-align:center;
-}
+      const res = await fetch(url);
+      const data = await res.json();
 
-h1 {
-  font-size:2rem;
-  margin-bottom:20px;
-  color:#1f1f1f;
-}
+      updateSlot("slot1", data.slot1.status);
+      updateSlot("slot2", data.slot2.status);
+      updateSlot("slot3", data.slot3.status);
+      updateSlot("slot4", data.slot4.status);
+      updateSlot("slot5", data.slot5.status);
+    }
 
-/* ============ PARKING AREA ============ */
-.parking-area {
-  width:95%;
-  max-width:1000px;
-  margin:auto;
-  background:#1f1f1f;
-  border:4px solid #000;
-  border-radius:12px;
-  padding-top:40px;
-  padding-bottom:40px;
-}
+    function updateSlot(id, status) {
+      const div = document.getElementById(id);
+      if (status === "occupied") {
+        div.style.background = "red";
+        div.innerHTML = id.toUpperCase() + "<br>Occupied";
+      } else {
+        div.style.background = "green";
+        div.innerHTML = id.toUpperCase() + "<br>Empty";
+      }
+    }
 
-/* ============ SLOT ROW CENTER ============ */
-.slot-row {
-  display:flex;
-  justify-content:center;
-  gap:40px;
-  margin-bottom:30px;
-}
-
-/* SLOT PARKING */
-.slot {
-  width:150px;
-  height:250px;
-  border:3px solid white;
-  border-radius:6px;
-  background:#4CAF50; /* default empty */
-  position:relative;
-  overflow:hidden;
-  transition:.4s;
-}
-
-.slot-label {
-  position:absolute;
-  top:6px;
-  width:100%;
-  text-align:center;
-  color:white;
-  font-weight:bold;
-}
-
-.pillar {
-  position:absolute;
-  bottom:10px;
-  right:10px;
-  background:white;
-  color:black;
-  border:2px solid black;
-  border-radius:6px;
-  padding:3px 6px;
-  font-weight:bold;
-}
-
-/* ============ CAR ICON ============ */
-.car-icon {
-  width:40%;
-  height:25%;
-  background:white;
-  position:absolute;
-  left:30%;
-  bottom:-100px;      /* start outside */
-  border-radius:6px;
-  opacity:0;
-}
-
-/* ============ ANIMASI MASUK ============ */
-@keyframes enterLane {
-  0% { transform:translateY(120px); opacity:1; }
-  100% { transform:translateY(0px); opacity:1; }
-}
-
-@keyframes enterSlot {
-  0% { bottom:-100px; opacity:1; }
-  100% { bottom:50px; opacity:1; }
-}
-
-.slot.occupied .car-icon {
-  animation: enterSlot 1s ease forwards;
-}
-
-.slot.empty .car-icon {
-  bottom:-100px;
-  opacity:0;
-}
-
-/* SLOT COLOR */
-.slot.occupied { background:#ff4d4d; }
-.slot.empty { background:#4CAF50; }
-
-/* ============ JALAN MENEGAK KE ATAS ============ */
-.lane-vertical {
-  width:6px;
-  height:80px;
-  background:#2c2c2c;
-  border-left:2px dashed white;
-  border-right:2px dashed white;
-  margin:auto;
-}
-
-/* ============ JALAN MELINTANG ============ */
-.road-horizontal {
-  width:100%;
-  height:90px;
-  background:#2c2c2c;
-  border-top:4px dashed white;
-  border-bottom:4px dashed white;
-
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  gap:160px;
-}
-
-.arrow {
-  font-size:35px;
-  color:white;
-  font-weight:bold;
-}
-
-/* ============ STATUS BOX ============ */
-.status-box {
-  position:fixed;
-  right:20px;
-  bottom:20px;
-  background:#1f1f1f;
-  padding:15px 25px;
-  border:3px solid black;
-  border-radius:12px;
-  color:white;
-  font-size:1.2rem;
-  font-weight:bold;
-}
-</style>
+    setInterval(loadData, 1000);
+  </script>
 </head>
 <body>
+  <h2>Smart Parking Live</h2>
 
-<h1>SMART PARKING ONLINE AME</h1>
-
-<div class="parking-area">
-
-  <!-- ROW SLOT CENTER -->
-  <div class="slot-row">
-    <div class="slot" id="slot1"></div>
-    <div class="slot" id="slot2"></div>
-    <div class="slot" id="slot3"></div>
-    <div class="slot" id="slot4"></div>
-    <div class="slot" id="slot5"></div>
-  </div>
-
-  <!-- LANE MENEGAK -->
-  <div class="slot-row">
-    <div class="lane-vertical"></div>
-    <div class="lane-vertical"></div>
-    <div class="lane-vertical"></div>
-    <div class="lane-vertical"></div>
-    <div class="lane-vertical"></div>
-  </div>
-
-  <!-- JALAN MELINTANG -->
-  <div class="road-horizontal">
-    <div class="arrow">⬅️</div>
-    <div class="arrow">⬇️</div>
-    <div class="arrow">➡️</div>
-  </div>
-
-</div>
-
-<div class="status-box">
-  Petak Kosong: <span id="count">0</span> / 5
-</div>
-
-
-<script>
-/* ============ GENERATE LABEL, PILAR & CAR ============ */
-['slot1','slot2','slot3','slot4','slot5'].forEach(id=>{
-  const div=document.getElementById(id);
-
-  const label=document.createElement('div');
-  label.className='slot-label';
-  label.innerText=id.toUpperCase();
-  div.appendChild(label);
-
-  const pillar=document.createElement('div');
-  pillar.className='pillar';
-  pillar.innerText=id.replace("slot","");
-  div.appendChild(pillar);
-
-  const car=document.createElement('div');
-  car.className='car-icon';
-  div.appendChild(car);
-
-  div.classList.add("empty");
-});
-
-/* ============ FETCH FIREBASE ============ */
-async function loadData(){
-  try{
-    const url="https://smart-parking-aee-default-rtdb.asia-southeast1.firebasedatabase.app/parking.json";
-    const res=await fetch(url);
-    const data=await res.json();
-
-    Object.keys(data).forEach(id=>{
-      const slot=document.getElementById(id);
-      if(!slot) return;
-
-      if(data[id].status==="occupied"){
-        slot.classList.remove("empty");
-        slot.classList.add("occupied");
-      } else {
-        slot.classList.remove("occupied");
-        slot.classList.add("empty");
-      }
-    });
-
-    const emptyCount = Object.values(data).filter(v=>v.status==="empty").length;
-    document.getElementById("count").innerText = emptyCount;
-
-  }catch(err){
-    console.log(err);
-  }
-}
-
-setInterval(loadData,1000);
-loadData();
-</script>
+  <div id="slot1" class="slot">Slot 1</div>
+  <div id="slot2" class="slot">Slot 2</div>
+  <div id="slot3" class="slot">Slot 3</div>
+  <div id="slot4" class="slot">Slot 4</div>
+  <div id="slot5" class="slot">Slot 5</div>
 
 </body>
 </html>
