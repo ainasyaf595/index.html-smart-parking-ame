@@ -1,26 +1,265 @@
-<div class="parking-grid">
-    <div id="slot1" class="slot"></div>
-    <div id="slot2" class="slot"></div>
-    <div id="slot3" class="slot"></div>
-    <div id="slot4" class="slot"></div>
-    <div id="slot5" class="slot"></div>
-</div>
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Smart Parking Live</title>
 
-<!-- Tambahan: Cabang jalan naik untuk setiap petak -->
-<div style="display:flex; justify-content:center; gap:55px;">
-  <div class="road-vertical-up"><div class="dash"></div></div>
-  <div class="road-vertical-up"><div class="dash"></div></div>
-  <div class="road-vertical-up"><div class="dash"></div></div>
-  <div class="road-vertical-up"><div class="dash"></div></div>
-  <div class="road-vertical-up"><div class="dash"></div></div>
-</div>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #f2f2f2;
+      margin: 0;
+      padding: 0;
+    }
 
-<!-- Jalan melintang -->
-<div class="road-horizontal">
-  <div class="dash"></div>
-</div>
+    h2 {
+      background: #1a237e;
+      color: white;
+      padding: 15px;
+      margin: 0;
+      box-shadow: 0 3px 5px rgba(0,0,0,0.2);
+    }
 
-<!-- Jalan masuk (cabang turun) -->
-<div class="road-vertical-down">
-  <div class="dash"></div>
-</div>
+    /* GRID PARKING RESPONSIVE */
+    .parking-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 20px;
+      gap: 20px;
+    }
+
+    .slot {
+      width: 150px;
+      height: 200px;
+      background: green;
+      color: white;
+      border-radius: 15px;
+      border: 4px solid #000;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      position: relative;
+      overflow: hidden;
+      font-size: 18px;
+      font-weight: bold;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      padding-top: 10px;
+      transition: background 0.3s;
+    }
+
+    /* Kereta */
+    .car {
+      width: 90px;
+      height: 45px;
+      background: yellow;
+      border-radius: 8px;
+      position: absolute;
+      bottom: -60px;
+      left: 27px;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.4);
+      transition: bottom 0.9s ease-in-out;
+    }
+
+    .car.in { bottom: 25px; }
+    .car.out { bottom: -80px; }
+
+    /* ------------------------------------ */
+    /* JALAN UTAMA MELINTANG */
+    .road-horizontal {
+      width: 100%;
+      height: 70px;
+      background: #555;
+      position: relative;
+      margin-top: 20px;
+      box-shadow: inset 0 0 10px black;
+    }
+
+    .road-horizontal .dash {
+      width: 80%;
+      height: 6px;
+      border-top: 6px dashed white;
+      position: absolute;
+      top: 32px;
+      left: 10%;
+    }
+
+    /* CABANG NAIK KE SLOT */
+    .road-vertical-up {
+      width: 40px;
+      height: 90px;
+      background: #555;
+      margin: auto;
+      margin-top: -5px;
+      box-shadow: inset 0 0 10px black;
+      position: relative;
+    }
+
+    .road-vertical-up .dash {
+      border-left: 6px dashed white;
+      height: 70px;
+      position: absolute;
+      left: 17px;
+      top: 10px;
+    }
+
+    /* CABANG TURUN (JALAN MASUK) */
+    .road-vertical-down {
+      width: 40px;
+      height: 120px;
+      background: #555;
+      margin: auto;
+      margin-top: 0px;
+      box-shadow: inset 0 0 10px black;
+      position: relative;
+    }
+
+    .road-vertical-down .dash {
+      border-left: 6px dashed white;
+      height: 100px;
+      position: absolute;
+      left: 17px;
+      top: 10px;
+    }
+
+    /* PANEL INFO */
+    #infoPanel {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #283593;
+      padding: 15px 20px;
+      color: white;
+      border-radius: 12px;
+      font-size: 18px;
+      border: 3px solid white;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.4);
+    }
+
+    /* Responsive kecil */
+    @media (max-width: 600px) {
+      .slot {
+        width: 130px;
+        height: 180px;
+      }
+      .car {
+        width: 75px;
+        left: 25px;
+      }
+    }
+
+  </style>
+
+  <script>
+    let previousStatus = {};
+
+    async function loadData() {
+      const url =
+        "https://smart-parking-aee-default-rtdb.asia-southeast1.firebasedatabase.app/parking.json";
+
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+
+        let emptyCount = 0;
+
+        for (let i = 1; i <= 5; i++) {
+          const id = "slot" + i;
+          const status = data[id].status;
+
+          if (status === "empty") emptyCount++;
+
+          updateSlot(id, status);
+        }
+
+        document.getElementById("emptyCount").innerHTML = emptyCount;
+
+      } catch (e) {
+        console.error("Gagal baca data:", e);
+      }
+    }
+
+    function updateSlot(id, status) {
+      const div = document.getElementById(id);
+
+      div.style.background = status === "occupied" ? "red" : "green";
+      div.innerHTML = id.toUpperCase() + "<br>" +
+                      (status === "occupied" ? "Occupied" : "Empty");
+
+      const existingCar = div.querySelector(".car");
+
+      /* ---------------- KERETA MASUK ---------------- */
+      if (status === "occupied") {
+        if (!existingCar) {
+          const car = document.createElement("div");
+          car.classList.add("car");
+          div.appendChild(car);
+
+          setTimeout(() => car.classList.add("in"), 50);
+        }
+      }
+
+      /* ---------------- KERETA KELUAR ---------------- */
+      if (status === "empty") {
+        if (existingCar) {
+          existingCar.classList.remove("in");
+          existingCar.classList.add("out");
+
+          setTimeout(() => existingCar.remove(), 900);
+        }
+      }
+
+      previousStatus[id] = status;
+    }
+
+    function updateClock() {
+      const now = new Date();
+      document.getElementById("clock").innerHTML =
+        now.toLocaleTimeString();
+    }
+
+    setInterval(loadData, 1000);
+    setInterval(updateClock, 1000);
+  </script>
+
+</head>
+<body>
+
+  <h2>SMART PARKING LIVE</h2>
+
+  <!-- PARKING AREA -->
+  <div class="parking-grid">
+    <div id="slot1" class="slot">Slot 1</div>
+    <div id="slot2" class="slot">Slot 2</div>
+    <div id="slot3" class="slot">Slot 3</div>
+    <div id="slot4" class="slot">Slot 4</div>
+    <div id="slot5" class="slot">Slot 5</div>
+  </div>
+
+  <!-- CABANG KE SLOT -->
+  <div style="display:flex; justify-content:center; gap:75px;">
+    <div class="road-vertical-up"><div class="dash"></div></div>
+    <div class="road-vertical-up"><div class="dash"></div></div>
+    <div class="road-vertical-up"><div class="dash"></div></div>
+    <div class="road-vertical-up"><div class="dash"></div></div>
+    <div class="road-vertical-up"><div class="dash"></div></div>
+  </div>
+
+  <!-- JALAN MELINTANG -->
+  <div class="road-horizontal">
+    <div class="dash"></div>
+  </div>
+
+  <!-- JALAN MASUK → KE BAWAH -->
+  <div class="road-vertical-down">
+    <div class="dash"></div>
+  </div>
+
+  <!-- PANEL INFO -->
+  <div id="infoPanel">
+    <div><b>Masa:</b> <span id="clock"></span></div>
+    <div><b>Slot Kosong:</b> <span id="emptyCount">0</span></div>
+  </div>
+
+</body>
+</html>
