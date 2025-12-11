@@ -20,22 +20,24 @@
       box-shadow: 0 3px 5px rgba(0,0,0,0.3);
     }
 
-    /* ====== PARKING LOT GRID ====== */
+    /* ====== PARKING GRID ====== */
     .parking-row {
       display: flex;
       justify-content: center;
-      gap: 15px;
+      gap: 18px;
       margin-top: 20px;
     }
 
     .slot {
       width: 150px;
       height: 220px;
-      background: #2e2e2e;  /* asphalt */
+      background: green;      /* berubah ikut status */
       border-radius: 6px;
       position: relative;
       overflow: hidden;
       box-shadow: inset 0 0 12px black;
+      border: 4px solid #ffffff88;
+      transition: background 0.3s;
     }
 
     /* Garisan parking */
@@ -45,7 +47,7 @@
       left: 0;
       right: 0;
       bottom: 0;
-      height: 5px;
+      height: 6px;
       background: white;
     }
 
@@ -54,7 +56,7 @@
       position: absolute;
       top: 0;
       height: 100%;
-      width: 5px;
+      width: 6px;
       background: white;
       right: 0;
     }
@@ -62,34 +64,72 @@
     .slot-label {
       color: white;
       font-weight: bold;
-      font-size: 20px;
+      font-size: 18px;
       margin-top: 10px;
       text-shadow: 0 2px 4px rgba(0,0,0,0.5);
     }
 
-    /* Kereta */
+    /* ====== NEW CAR SVG ====== */
     .car {
       width: 90px;
-      height: 45px;
-      background: yellow;
-      border-radius: 7px;
+      height: 50px;
       position: absolute;
-      bottom: -60px;
+      bottom: -70px;
       left: 27px;
       transition: bottom 0.9s ease-in-out;
-      box-shadow: 0 3px 5px rgba(0,0,0,0.3);
     }
 
     .car.in { bottom: 30px; }
     .car.out { bottom: -90px; }
 
-    /* ====== JALAN MELINTANG DI BAWAH PARKING ====== */
+    /* ====== JALAN IN & OUT (VERTIKAL) ====== */
+    .road-vertical-container {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin-top: 0px;
+    }
+
+    .road-vertical {
+      width: 60px;
+      height: 170px;
+      background: #444;
+      border-radius: 20px;
+      box-shadow: inset 0 0 15px black;
+      position: relative;
+    }
+
+    /* Arrow ke atas */
+    .arrow-up {
+      width: 0;
+      height: 0;
+      border-left: 18px solid transparent;
+      border-right: 18px solid transparent;
+      border-bottom: 28px solid white;
+      position: absolute;
+      top: 60px;
+      left: 12px;
+    }
+
+    /* Arrow ke bawah */
+    .arrow-down {
+      width: 0;
+      height: 0;
+      border-left: 18px solid transparent;
+      border-right: 18px solid transparent;
+      border-top: 28px solid white;
+      position: absolute;
+      top: 60px;
+      left: 12px;
+    }
+
+    /* ====== JALAN MELINTANG ====== */
     .road-main {
       width: 95%;
       height: 90px;
       background: #3f3f3f;
       margin: 0 auto;
-      margin-top: 5px; /* rapat dengan parking */
+      margin-top: 0px;
       border-radius: 10px;
       box-shadow: inset 0 0 20px black;
       position: relative;
@@ -103,7 +143,7 @@
       left: 10%;
     }
 
-    /* Panel info */
+    /* ====== INFO PANEL ====== */
     #infoPanel {
       position: fixed;
       bottom: 20px;
@@ -150,12 +190,21 @@ async function loadData() {
 function updateSlot(id, status) {
   const div = document.getElementById(id);
 
+  /* Tukar warna slot */
+  div.style.background = status === "occupied" ? "red" : "green";
+
   const existingCar = div.querySelector(".car");
 
   /* MASUK */
   if (status === "occupied") {
     if (!existingCar) {
-      const car = document.createElement("div");
+      const car = document.createElement("img");
+      car.src = "data:image/svg+xml;utf8,\
+      <svg width='90' height='50' xmlns='http://www.w3.org/2000/svg'>\
+        <rect x='5' y='5' width='80' height='40' rx='10' fill='#ffeb3b' stroke='black' stroke-width='3'/>\
+        <rect x='20' y='10' width='50' height='15' rx='4' fill='#bdbdbd'/>\
+        <rect x='22' y='28' width='45' height='10' rx='3' fill='#212121'/>\
+      </svg>";
       car.classList.add("car");
       div.appendChild(car);
       setTimeout(() => car.classList.add("in"), 50);
@@ -188,7 +237,7 @@ setInterval(updateClock, 1000);
 
 <h2>SMART PARKING LIVE</h2>
 
-<!-- PARKING GRID -->
+<!-- PARKING ROW -->
 <div class="parking-row">
   <div id="slot1" class="slot"><div class="slot-label">Slot 1</div></div>
   <div id="slot2" class="slot"><div class="slot-label">Slot 2</div></div>
@@ -197,7 +246,18 @@ setInterval(updateClock, 1000);
   <div id="slot5" class="slot"><div class="slot-label">Slot 5</div></div>
 </div>
 
-<!-- JALAN RAPAT KE PARKING -->
+<!-- JALAN IN & OUT -->
+<div class="road-vertical-container">
+  <div class="road-vertical">
+    <div class="arrow-up"></div>
+  </div>
+
+  <div class="road-vertical">
+    <div class="arrow-down"></div>
+  </div>
+</div>
+
+<!-- JALAN MELINTANG -->
 <div class="road-main">
   <div class="dash"></div>
 </div>
