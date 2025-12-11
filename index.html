@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Smart Parking Online AME</title>
+  <title>Smart Parking Live</title>
 
   <style>
     body {
       font-family: Arial, sans-serif;
       text-align: center;
-      background: #f2f2f2;
+      background: #e6e6e6;
       margin: 0;
       padding: 0;
     }
@@ -17,16 +17,16 @@
       color: white;
       padding: 15px;
       margin: 0;
-      box-shadow: 0 3px 5px rgba(0,0,0,0.2);
+      font-size: 26px;
+      box-shadow: 0 3px 5px rgba(0,0,0,0.3);
     }
 
-    /* GRID PARKING RESPONSIVE */
+    /* GRID PARKING */
     .parking-grid {
       display: flex;
-      flex-wrap: wrap;
       justify-content: center;
-      padding: 20px;
-      gap: 20px;
+      gap: 25px;
+      margin-top: 25px;
     }
 
     .slot {
@@ -36,16 +36,13 @@
       color: white;
       border-radius: 15px;
       border: 4px solid #000;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
       position: relative;
       overflow: hidden;
       font-size: 18px;
       font-weight: bold;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
       padding-top: 10px;
-      transition: background 0.3s;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      transition: background 0.2s;
     }
 
     /* Kereta */
@@ -53,81 +50,106 @@
       width: 90px;
       height: 45px;
       background: yellow;
-      border-radius: 8px;
+      border-radius: 7px;
       position: absolute;
       bottom: -60px;
       left: 27px;
-      box-shadow: 0 3px 6px rgba(0,0,0,0.4);
       transition: bottom 0.9s ease-in-out;
+      box-shadow: 0 3px 5px rgba(0,0,0,0.3);
     }
 
     .car.in { bottom: 25px; }
     .car.out { bottom: -80px; }
 
-    /* ------------------------------------ */
-    /* JALAN UTAMA MELINTANG */
-    .road-horizontal {
-      width: 100%;
-      height: 70px;
-      background: #555;
+    /* ==== PARKING LOT ROADS ==== */
+
+    /* Jalan melintang */
+    .road-main {
+      width: 90%;
+      height: 80px;
+      background: #444;
+      margin: 20px auto;
+      border-radius: 20px;
       position: relative;
-      margin-top: 20px;
-      box-shadow: inset 0 0 10px black;
+      box-shadow: inset 0 0 15px black;
     }
 
-    .road-horizontal .dash {
-      width: 80%;
-      height: 6px;
+    /* Garisan putus */
+    .dash {
       border-top: 6px dashed white;
+      width: 80%;
       position: absolute;
-      top: 32px;
+      top: 37px;
       left: 10%;
     }
 
-    /* CABANG NAIK KE SLOT */
-    .road-vertical-up {
+    /* Corner bulat ke atas */
+    .corner-up {
       width: 80px;
-      height: 100px;
-      background: #555;
-      margin: auto;
-      margin-top: -5px;
-      box-shadow: inset 0 0 10px black;
+      height: 80px;
+      border-radius: 80px;
+      background: #444;
+      position: absolute;
+      top: -60px;
+      left: calc(50% - 40px);
+      border-bottom: 8px solid white;
+      border-right: 8px solid white;
+      transform: rotate(45deg);
+      box-shadow: inset 0 0 15px black;
+    }
+
+    /* Jalan naik seragam */
+    .road-up {
+      width: 40px;
+      height: 120px;
+      background: #444;
+      margin: 0 auto;
+      margin-top: -20px;
+      border-radius: 20px;
+      box-shadow: inset 0 0 15px black;
       position: relative;
     }
 
-    .road-vertical-up .dash {
-      border-left: 6px dashed white;
-      height: 70px;
+    .road-up .arrow-up {
+      width: 0;
+      height: 0;
+      border-left: 14px solid transparent;
+      border-right: 14px solid transparent;
+      border-bottom: 20px solid white;
       position: absolute;
-      left: 17px;
-      top: 10px;
+      top: 45%;
+      left: 6px;
     }
 
-    /* CABANG TURUN (JALAN MASUK) */
-    .road-vertical-down {
-      width: 80px;
+    /* Jalan masuk bawah */
+    .road-entry {
+      width: 40px;
       height: 150px;
-      background: #555;
-      margin: auto;
-      margin-top: -5px;
-      box-shadow: inset 0 0 10px black;
+      background: #444;
+      margin: 0 auto;
+      margin-top: 0px;
+      border-radius: 20px;
+      box-shadow: inset 0 0 15px black;
       position: relative;
     }
 
-    .road-vertical-down .dash {
-      border-left: 6px dashed white;
-      height: 100px;
+    .road-entry .arrow-down {
+      width: 0;
+      height: 0;
+      border-left: 14px solid transparent;
+      border-right: 14px solid transparent;
+      border-top: 20px solid white;
       position: absolute;
-      left: 17px;
-      top: 10px;
+      top: 55%;
+      left: 6px;
     }
 
-    /* PANEL INFO */
+    /* Panel info */
     #infoPanel {
       position: fixed;
       bottom: 20px;
       right: 20px;
-      background: #283593;
+      background: #1a237e;
       padding: 15px 20px;
       color: white;
       border-radius: 12px;
@@ -136,130 +158,105 @@
       box-shadow: 0 3px 10px rgba(0,0,0,0.4);
     }
 
-    /* Responsive kecil */
-    @media (max-width: 600px) {
-      .slot {
-        width: 130px;
-        height: 180px;
-      }
-      .car {
-        width: 75px;
-        left: 25px;
-      }
-    }
-
   </style>
 
-  <script>
-    let previousStatus = {};
+<script>
 
-    async function loadData() {
-      const url =
-        "https://smart-parking-aee-default-rtdb.asia-southeast1.firebasedatabase.app/parking.json";
+let previousStatus = {};
 
-      try {
-        const res = await fetch(url);
-        const data = await res.json();
+async function loadData() {
+  const url =
+  "https://smart-parking-aee-default-rtdb.asia-southeast1.firebasedatabase.app/parking.json";
 
-        let emptyCount = 0;
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
 
-        for (let i = 1; i <= 5; i++) {
-          const id = "slot" + i;
-          const status = data[id].status;
+    let emptyCount = 0;
 
-          if (status === "empty") emptyCount++;
+    for (let i = 1; i <= 5; i++) {
+      const id = "slot" + i;
+      const status = data[id].status;
 
-          updateSlot(id, status);
-        }
+      if (status === "empty") emptyCount++;
 
-        document.getElementById("emptyCount").innerHTML = emptyCount;
-
-      } catch (e) {
-        console.error("Gagal baca data:", e);
-      }
+      updateSlot(id, status);
     }
 
-    function updateSlot(id, status) {
-      const div = document.getElementById(id);
+    document.getElementById("emptyCount").innerHTML = emptyCount;
 
-      div.style.background = status === "occupied" ? "red" : "green";
-      div.innerHTML = id.toUpperCase() + "<br>" +
-                      (status === "occupied" ? "Occupied" : "Empty");
+  } catch (e) { console.error(e); }
+}
 
-      const existingCar = div.querySelector(".car");
+function updateSlot(id, status) {
+  const div = document.getElementById(id);
 
-      /* ---------------- KERETA MASUK ---------------- */
-      if (status === "occupied") {
-        if (!existingCar) {
-          const car = document.createElement("div");
-          car.classList.add("car");
-          div.appendChild(car);
+  div.style.background = status === "occupied" ? "red" : "green";
+  div.innerHTML = id.toUpperCase() + "<br>" + (status === "occupied" ? "Occupied" : "Empty");
 
-          setTimeout(() => car.classList.add("in"), 50);
-        }
-      }
+  const existingCar = div.querySelector(".car");
 
-      /* ---------------- KERETA KELUAR ---------------- */
-      if (status === "empty") {
-        if (existingCar) {
-          existingCar.classList.remove("in");
-          existingCar.classList.add("out");
-
-          setTimeout(() => existingCar.remove(), 900);
-        }
-      }
-
-      previousStatus[id] = status;
+  /* Kereta MASUK */
+  if (status === "occupied") {
+    if (!existingCar) {
+      const car = document.createElement("div");
+      car.classList.add("car");
+      div.appendChild(car);
+      setTimeout(() => car.classList.add("in"), 50);
     }
+  }
 
-    function updateClock() {
-      const now = new Date();
-      document.getElementById("clock").innerHTML =
-        now.toLocaleTimeString();
+  /* Kereta KELUAR */
+  if (status === "empty") {
+    if (existingCar) {
+      existingCar.classList.remove("in");
+      existingCar.classList.add("out");
+      setTimeout(() => existingCar.remove(), 900);
     }
+  }
+}
 
-    setInterval(loadData, 1000);
-    setInterval(updateClock, 1000);
-  </script>
+function updateClock() {
+  const now = new Date();
+  document.getElementById("clock").innerHTML = now.toLocaleTimeString();
+}
+
+setInterval(loadData, 1000);
+setInterval(updateClock, 1000);
+
+</script>
 
 </head>
 <body>
 
-  <h2>SMART PARKING LIVE</h2>
+<h2>SMART PARKING LIVE</h2>
 
-  <!-- PARKING AREA -->
-  <div class="parking-grid">
-    <div id="slot1" class="slot">Slot 1</div>
-    <div id="slot2" class="slot">Slot 2</div>
-    <div id="slot3" class="slot">Slot 3</div>
-    <div id="slot4" class="slot">Slot 4</div>
-    <div id="slot5" class="slot">Slot 5</div>
-  </div>
+<!-- PARKING GRID -->
+<div class="parking-grid">
+  <div id="slot1" class="slot">Slot 1</div>
+  <div id="slot2" class="slot">Slot 2</div>
+  <div id="slot3" class="slot">Slot 3</div>
+  <div id="slot4" class="slot">Slot 4</div>
+  <div id="slot5" class="slot">Slot 5</div>
+</div>
 
-  <!-- CABANG KE SLOT -->
-  <div style="display:flex; justify-content:center; gap:75px;">
-    <div class="road-vertical-up"><div class="dash"></div></div>
-    <div class="road-vertical-up"><div class="dash"></div></div>
-    <div class="road-vertical-up"><div class="dash"></div></div>
-    <div class="road-vertical-up"><div class="dash"></div></div>
-    <div class="road-vertical-up"><div class="dash"></div></div>
-  </div>
+<!-- JALAN NAIK SERAGAM -->
+<div class="road-up"><div class="arrow-up"></div></div>
 
-  <!-- JALAN MELINTANG -->
-  <div class="road-horizontal">
-    <div class="dash"></div>
-  </div>
+<!-- CORNER ROUNDING -->
+<div class="road-main">
+  <div class="dash"></div>
+  <div class="corner-up"></div>
+</div>
 
-  <!-- JALAN MASUK → KE BAWAH -->
-  <div class="road-vertical-down">
-    <div class="dash"></div>
-  </div>
+<!-- JALAN MASUK -->
+<div class="road-entry"><div class="arrow-down"></div></div>
 
-  <!-- PANEL INFO -->
-  <div id="infoPanel">
-    <div><b>Masa:</b> <span id="clock"></span></div>
-    <div><b>Slot Kosong:</b> <span id="emptyCount">0</span></div>
-  </div>
+<!-- PAPARAN INFO -->
+<div id="infoPanel">
+  Masa: <span id="clock"></span><br>
+  Slot Kosong: <span id="emptyCount">0</span>
+</div>
 
 </body>
 </html>
