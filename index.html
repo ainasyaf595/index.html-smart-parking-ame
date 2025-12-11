@@ -1,53 +1,103 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Smart Parking Live</title>
+  <title>Smart Parking Online AME</title>
+
   <style>
-    body { font-family: Arial; text-align: center; }
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #f2f2f2;
+      margin: 0;
+      padding: 0;
+    }
+
+    h2 {
+      background: #1a237e;
+      color: white;
+      padding: 15px;
+      margin: 0;
+      box-shadow: 0 3px 5px rgba(0,0,0,0.2);
+    }
+
+    /* GRID RESPONSIVE */
+    .parking-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 20px;
+      gap: 15px;
+    }
 
     .slot {
-      width: 120px; height: 160px;
-      margin: 10px; display: inline-block;
-      border-radius: 10px; color: white;
-      font-size: 20px; font-weight: bold;
+      width: 150px;
+      height: 200px;
+      background: green;
+      color: white;
+      border-radius: 15px;
+      border: 4px solid #000;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
       position: relative;
       overflow: hidden;
+      font-size: 18px;
+      font-weight: bold;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      padding-top: 10px;
+      transition: background 0.3s;
     }
 
-    /* Kereta animasi */
+    /* Kereta */
     .car {
-      width: 80px; height: 40px;
+      width: 90px;
+      height: 45px;
       background: yellow;
-      border-radius: 5px;
+      border-radius: 8px;
       position: absolute;
-      bottom: -50px;     /* mula di luar petak */
-      left: 20px;
-      transition: bottom 1s ease-out;
+      bottom: -60px;
+      left: 27px;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.4);
+      transition: bottom 0.9s ease-in-out;
     }
 
-    .car.in {
-      bottom: 20px;     /* naik ke dalam slot */
-    }
+    .car.in { bottom: 25px; }      /* kereta masuk */
+    .car.out { bottom: -80px; }     /* kereta keluar */
 
     /* Panel kanan bawah */
     #infoPanel {
       position: fixed;
       bottom: 20px;
       right: 20px;
-      background: #222;
+      background: #283593;
       padding: 15px 20px;
       color: white;
-      border-radius: 10px;
+      border-radius: 12px;
       font-size: 18px;
-      text-align: left;
+      border: 3px solid white;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.4);
     }
+
+    /* Responsive kecil */
+    @media (max-width: 600px) {
+      .slot {
+        width: 130px;
+        height: 180px;
+      }
+      .car {
+        width: 75px;
+        left: 25px;
+      }
+    }
+
   </style>
 
   <script>
-    let previousStatus = {}; // untuk detect perubahan
+    let previousStatus = {};
 
     async function loadData() {
-      const url = "https://smart-parking-aee-default-rtdb.asia-southeast1.firebasedatabase.app/parking.json";
+      const url =
+        "https://smart-parking-aee-default-rtdb.asia-southeast1.firebasedatabase.app/parking.json";
 
       try {
         const res = await fetch(url);
@@ -64,75 +114,72 @@
           updateSlot(id, status);
         }
 
-        // Kemas kini kiraan slot kosong
         document.getElementById("emptyCount").innerHTML = emptyCount;
 
       } catch (e) {
-        console.error("Gagal muat:", e);
+        console.error("Gagal baca data:", e);
       }
     }
 
     function updateSlot(id, status) {
       const div = document.getElementById(id);
 
-      // Jika bertukar kepada occupied → mainkan animasi kereta
+      // STATUS MERAH / HIJAU
+      div.style.background = status === "occupied" ? "red" : "green";
+      div.innerHTML = id.toUpperCase() + "<br>" +
+                      (status === "occupied" ? "Occupied" : "Empty");
+
+      // check kereta
+      const existingCar = div.querySelector(".car");
+
+      // --------------- KERETA MASUK ---------------
       if (status === "occupied") {
-        div.style.background = "red";
-        div.innerHTML = id.toUpperCase() + "<br>Occupied";
+        if (!existingCar) {
+          const car = document.createElement("div");
+          car.classList.add("car");
+          div.appendChild(car);
 
-        // Jika status baru & sebelum ini empty → animasi kereta
-        if (previousStatus[id] !== "occupied") {
-          spawnCar(div);
+          setTimeout(() => car.classList.add("in"), 50); // animasi masuk
         }
-
-      } else {
-        div.style.background = "green";
-        div.innerHTML = id.toUpperCase() + "<br>Empty";
       }
 
-      // simpan status untuk next comparison
+      // --------------- KERETA KELUAR ---------------
+      if (status === "empty") {
+        if (existingCar) {
+          existingCar.classList.remove("in");
+          existingCar.classList.add("out");
+
+          setTimeout(() => existingCar.remove(), 900); // hilang bila keluar
+        }
+      }
+
       previousStatus[id] = status;
     }
 
-    // Buat kereta bergerak masuk
-    function spawnCar(div) {
-      const car = document.createElement("div");
-      car.classList.add("car");       // kereta mula di bawah
-
-      div.appendChild(car);
-
-      setTimeout(() => {
-        car.classList.add("in");     // naik ke dalam slot
-      }, 100);
-
-      // hilangkan selepas animasi
-      setTimeout(() => {
-        car.remove();
-      }, 1600);
-    }
-
-    // Fungsi paparan masa real-time
+    // JAM REALTIME
     function updateClock() {
       const now = new Date();
       document.getElementById("clock").innerHTML =
         now.toLocaleTimeString();
     }
 
-    // Live update
     setInterval(loadData, 1000);
     setInterval(updateClock, 1000);
   </script>
+
 </head>
 <body>
-  <h2>Smart Parking Live</h2>
 
-  <div id="slot1" class="slot">Slot 1</div>
-  <div id="slot2" class="slot">Slot 2</div>
-  <div id="slot3" class="slot">Slot 3</div>
-  <div id="slot4" class="slot">Slot 4</div>
-  <div id="slot5" class="slot">Slot 5</div>
+  <h2>SMART PARKING LIVE</h2>
 
-  <!-- Paparan kanan bawah -->
+  <div class="parking-grid">
+    <div id="slot1" class="slot">Slot 1</div>
+    <div id="slot2" class="slot">Slot 2</div>
+    <div id="slot3" class="slot">Slot 3</div>
+    <div id="slot4" class="slot">Slot 4</div>
+    <div id="slot5" class="slot">Slot 5</div>
+  </div>
+
   <div id="infoPanel">
     <div><b>Masa:</b> <span id="clock"></span></div>
     <div><b>Slot Kosong:</b> <span id="emptyCount">0</span></div>
