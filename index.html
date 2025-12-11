@@ -4,40 +4,123 @@
   <title>Smart Parking Live</title>
   <style>
     body { font-family: Arial; text-align: center; }
+
     .slot {
       width: 120px; height: 160px;
       margin: 10px; display: inline-block;
       border-radius: 10px; color: white;
-      line-height: 120px; font-size: 20px;
-      font-weight: bold;
+      font-size: 20px; font-weight: bold;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Kereta animasi */
+    .car {
+      width: 80px; height: 40px;
+      background: yellow;
+      border-radius: 5px;
+      position: absolute;
+      bottom: -50px;     /* mula di luar petak */
+      left: 20px;
+      transition: bottom 1s ease-out;
+    }
+
+    .car.in {
+      bottom: 20px;     /* naik ke dalam slot */
+    }
+
+    /* Panel kanan bawah */
+    #infoPanel {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #222;
+      padding: 15px 20px;
+      color: white;
+      border-radius: 10px;
+      font-size: 18px;
+      text-align: left;
     }
   </style>
+
   <script>
+    let previousStatus = {}; // untuk detect perubahan
+
     async function loadData() {
       const url = "https://smart-parking-aee-default-rtdb.asia-southeast1.firebasedatabase.app/parking.json";
 
-      const res = await fetch(url);
-      const data = await res.json();
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
 
-      updateSlot("slot1", data.slot1.status);
-      updateSlot("slot2", data.slot2.status);
-      updateSlot("slot3", data.slot3.status);
-      updateSlot("slot4", data.slot4.status);
-      updateSlot("slot5", data.slot5.status);
+        let emptyCount = 0;
+
+        for (let i = 1; i <= 5; i++) {
+          const id = "slot" + i;
+          const status = data[id].status;
+
+          if (status === "empty") emptyCount++;
+
+          updateSlot(id, status);
+        }
+
+        // Kemas kini kiraan slot kosong
+        document.getElementById("emptyCount").innerHTML = emptyCount;
+
+      } catch (e) {
+        console.error("Gagal muat:", e);
+      }
     }
 
     function updateSlot(id, status) {
       const div = document.getElementById(id);
+
+      // Jika bertukar kepada occupied → mainkan animasi kereta
       if (status === "occupied") {
         div.style.background = "red";
         div.innerHTML = id.toUpperCase() + "<br>Occupied";
+
+        // Jika status baru & sebelum ini empty → animasi kereta
+        if (previousStatus[id] !== "occupied") {
+          spawnCar(div);
+        }
+
       } else {
         div.style.background = "green";
         div.innerHTML = id.toUpperCase() + "<br>Empty";
       }
+
+      // simpan status untuk next comparison
+      previousStatus[id] = status;
     }
 
+    // Buat kereta bergerak masuk
+    function spawnCar(div) {
+      const car = document.createElement("div");
+      car.classList.add("car");       // kereta mula di bawah
+
+      div.appendChild(car);
+
+      setTimeout(() => {
+        car.classList.add("in");     // naik ke dalam slot
+      }, 100);
+
+      // hilangkan selepas animasi
+      setTimeout(() => {
+        car.remove();
+      }, 1600);
+    }
+
+    // Fungsi paparan masa real-time
+    function updateClock() {
+      const now = new Date();
+      document.getElementById("clock").innerHTML =
+        now.toLocaleTimeString();
+    }
+
+    // Live update
     setInterval(loadData, 1000);
+    setInterval(updateClock, 1000);
   </script>
 </head>
 <body>
@@ -48,6 +131,12 @@
   <div id="slot3" class="slot">Slot 3</div>
   <div id="slot4" class="slot">Slot 4</div>
   <div id="slot5" class="slot">Slot 5</div>
+
+  <!-- Paparan kanan bawah -->
+  <div id="infoPanel">
+    <div><b>Masa:</b> <span id="clock"></span></div>
+    <div><b>Slot Kosong:</b> <span id="emptyCount">0</span></div>
+  </div>
 
 </body>
 </html>
