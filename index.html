@@ -1,523 +1,260 @@
 <!DOCTYPE html>
-<html lang="ms">
+<html>
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Smart Parking — Clean UI</title>
+  <title>Smart Parking Live</title>
 
-<style>
-  :root{
-    --bg:#f3f5f7;
-    --card:#ffffff;
-    --primary:#0f172a; /* near-black */
-    --accent:#2b6cb0;  /* blue accent */
-    --slot-free:#e6f4ff;
-    --slot-occupied:#ffe9e9;
-    --asphalt:#3b4350;
-    --dash:#ffffff66;
-    --glass: rgba(255,255,255,0.6);
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #dcdcdc;
+      margin: 0;
+      padding: 0;
+    }
+
+    h2 {
+      background: #1a237e;
+      color: white;
+      padding: 15px;
+      margin: 0;
+      box-shadow: 0 3px 5px rgba(0,0,0,0.3);
+    }
+
+    /* ===== PARKING GRID ===== */
+    .parking-row {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .slot {
+      width: 140px;
+      height: 200px;
+      background: green;
+      border-radius: 6px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: inset 0 0 12px black;
+      border: 4px solid #ffffff88;
+      transition: background 0.3s;
+    }
+
+    /* Responsive untuk phone */
+    @media (max-width: 600px) {
+      .slot {
+        width: 110px;
+        height: 160px;
+      }
+    }
+
+    /* Garisan parking */
+    .slot::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 6px;
+      background: white;
+    }
+
+    .slot::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      height: 100%;
+      width: 6px;
+      background: white;
+      right: 0;
+    }
+
+    .slot-label {
+      color: white;
+      font-weight: bold;
+      font-size: 18px;
+      margin-top: 10px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+
+    /* ===== ANIMATION KERETA ===== */
+    .car {
+      width: 80px;
+      height: 45px;
+      position: absolute;
+      bottom: -90px;
+      left: 25px;
+      transition: bottom 0.6s ease-in-out;
+    }
+
+    .car.in { bottom: 20px; }
+    .car.out { bottom: -120px; }
+
+    /* ===== JALAN MELINTANG (rapat) ===== */
+    .road-main {
+      width: 95%;
+      height: 90px;
+      background: #3f3f3f;
+      margin: 5px auto 0 auto;
+      border-radius: 10px;
+      box-shadow: inset 0 0 20px black;
+      position: relative;
+    }
+
+    .road-main .dash {
+      border-top: 10px dashed white;
+      width: 80%;
+      position: absolute;
+      top: 40px;
+      left: 10%;
+    }
+
+    /* ===== JALAN MENEGAK (sambung dengan melintang) ===== */
+    .road-vertical-container {
+      display: flex;
+      justify-content: center;
+      gap: 0px;
+      margin-top: -10px;    /* tarik naik bagi bersambung */
+      margin-bottom: 20px;
+    }
+
+    .road-vertical {
+      width: 70px;
+      height: 160px;
+      background: #444;
+      border-radius: 15px;
+      box-shadow: inset 0 0 15px black;
+      position: relative;
+      margin-top: -5px;     /* rapat */
+    }
+
+    .arrow-up, .arrow-down {
+      width: 0;
+      height: 0;
+      border-left: 18px solid transparent;
+      border-right: 18px solid transparent;
+      position: absolute;
+      top: 60px;
+      left: 17px;
+    }
+
+    .arrow-up { border-bottom: 28px solid white; }
+    .arrow-down { border-top: 28px solid white; }
+
+    /* INFO PANEL */
+    #infoPanel {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #1a237e;
+      padding: 15px 20px;
+      color: white;
+      border-radius: 12px;
+      font-size: 18px;
+      border: 3px solid white;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.4);
+    }
+
+  </style>
+
+<script>
+
+async function loadData() {
+  const url =
+  "https://smart-parking-aee-default-rtdb.asia-southeast1.firebasedatabase.app/parking.json";
+
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+
+    let emptyCount = 0;
+
+    for (let i = 1; i <= 5; i++) {
+      const id = "slot" + i;
+      const status = data[id].status;
+
+      if (status === "empty") emptyCount++;
+
+      updateSlot(id, status);
+    }
+
+    document.getElementById("emptyCount").innerHTML = emptyCount;
+
+  } catch (e) { console.error(e); }
+}
+
+function updateSlot(id, status) {
+  const div = document.getElementById(id);
+
+  div.style.background = status === "occupied" ? "red" : "green";
+
+  const existingCar = div.querySelector(".car");
+
+  if (status === "occupied") {
+    if (!existingCar) {
+      const car = document.createElement("img");
+      car.src = "data:image/svg+xml;utf8,\
+      <svg width='90' height='50' xmlns='http://www.w3.org/2000/svg'>\
+        <rect x='5' y='5' width='80' height='40' rx='10' fill='#ffeb3b' stroke='black' stroke-width='3'/>\
+        <rect x='20' y='10' width='50' height='15' rx='4' fill='#bdbdbd'/>\
+        <rect x='22' y='28' width='45' height='10' rx='3' fill='#212121'/>\
+      </svg>";
+      car.classList.add("car");
+      div.appendChild(car);
+      setTimeout(() => car.classList.add("in"), 30);
+    }
   }
 
-  /* reset */
-  *{box-sizing:border-box}
-  html,body{height:100%}
-  body{
-    margin:0;
-    font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
-    background: linear-gradient(180deg,var(--bg), #e9eef5);
-    color:var(--primary);
-    -webkit-font-smoothing:antialiased;
-    -moz-osx-font-smoothing:grayscale;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:12px;
-    padding:14px;
+  if (status === "empty") {
+    if (existingCar) {
+      existingCar.classList.remove("in");
+      existingCar.classList.add("out");
+      setTimeout(() => existingCar.remove(), 650);
+    }
   }
+}
 
-  header{
-    width:100%;
-    max-width:1100px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:12px;
-  }
+function updateClock() {
+  const now = new Date();
+  document.getElementById("clock").innerHTML = now.toLocaleTimeString();
+}
 
-  h1{
-    margin:0;
-    font-size:18px;
-    color:var(--primary);
-    font-weight:600;
-  }
+setInterval(loadData, 1000);
+setInterval(updateClock, 1000);
 
-  .top-meta{
-    background:var(--card);
-    padding:8px 12px;
-    border-radius:12px;
-    box-shadow:0 6px 18px rgba(15,23,42,0.06);
-    display:flex;
-    gap:12px;
-    align-items:center;
-    font-size:14px;
-  }
+</script>
 
-  .container{
-    width:100%;
-    max-width:1100px;
-  }
-
-  /* layout: parking area */
-  .parking-area{
-    background: transparent;
-    width:100%;
-    padding:18px;
-    border-radius:14px;
-    display:flex;
-    flex-direction:column;
-    gap:12px;
-    align-items:center;
-  }
-
-  /* asphalt / horizontal road */
-  .road-horizontal{
-    width:100%;
-    max-width:1100px;
-    height:86px;
-    border-radius:12px;
-    background:
-      repeating-linear-gradient(90deg, rgba(255,255,255,0.02) 0 2px, transparent 2px 6px),
-      linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.06));
-    position:relative;
-    box-shadow: inset 0 -6px 18px rgba(0,0,0,0.12);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    overflow:visible;
-  }
-
-  /* dashed central line */
-  .road-horizontal::after{
-    content:"";
-    position:absolute;
-    left:12%;
-    right:12%;
-    top: calc(50% - 8px);
-    height: 8px;
-    border-top:8px dashed var(--dash);
-    pointer-events:none;
-    opacity:0.95;
-  }
-
-  /* vertical roads container aligned and overlapping (connected look) */
-  .road-verticals{
-    display:flex;
-    gap:22px;
-    justify-content:center;
-    width:100%;
-    margin-top:-10px; /* pull up to connect */
-  }
-
-  .road-vertical{
-    width:64px;
-    height:180px;
-    background: linear-gradient(180deg,#3a3f4a,#2f343b);
-    border-radius:14px;
-    position:relative;
-    box-shadow: inset 0 -4px 12px rgba(0,0,0,0.25);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    transform:translateY(-6px);
-  }
-
-  .road-vertical::before{
-    content:"";
-    position:absolute;
-    top:18%;
-    bottom:18%;
-    left:50%;
-    transform:translateX(-50%);
-    width:8px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
-    border-radius:4px;
-  }
-
-  /* arrow icons (subtle) */
-  .arrow{
-    width:0;height:0;
-    border-left:12px solid transparent;
-    border-right:12px solid transparent;
-    opacity:0.95;
-    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.25));
-  }
-  .arrow-up{ border-bottom:18px solid rgba(255,255,255,0.95); transform:translateY(-6px)}
-  .arrow-down{ border-top:18px solid rgba(255,255,255,0.95); transform:translateY(6px) }
-
-  /* parking row: slots visually above the horizontal road */
-  .slots-row{
-    display:flex;
-    gap:16px;
-    justify-content:center;
-    width:100%;
-    padding:6px 6%;
-    transform:translateY(-48px); /* lift above road */
-    pointer-events:none; /* purely visual */
-  }
-
-  .slot{
-    width:126px;
-    height:170px;
-    background: linear-gradient(180deg,var(--slot-free), #ffffff);
-    border-radius:10px;
-    border:1px solid rgba(15,23,42,0.06);
-    box-shadow: 0 12px 30px rgba(16,24,40,0.06), inset 0 -6px 18px rgba(0,0,0,0.03);
-    position:relative;
-    overflow:visible;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:flex-end;
-    padding-bottom:8px;
-    transition: transform 0.26s ease, background 0.3s ease;
-  }
-
-  .slot.occupied{
-    background: linear-gradient(180deg,var(--slot-occupied), #fff3f3);
-    transform: translateY(4px);
-  }
-
-  .slot-label{
-    font-size:13px;
-    color:rgba(15,23,42,0.75);
-    font-weight:600;
-    margin-bottom:6px;
-    pointer-events:auto;
-  }
-
-  /* subtle slot number display */
-  .slot-number{
-    position:absolute;
-    top:8px;
-    left:10px;
-    font-size:12px;
-    color:rgba(15,23,42,0.45);
-    font-weight:600;
-  }
-
-  /* realistic touch: painted lines around slot top */
-  .slot::before{
-    content:"";
-    position:absolute;
-    top:0;
-    left:50%;
-    transform:translateX(-50%);
-    width:90%;
-    height:10px;
-    border-radius:6px;
-    background: linear-gradient(90deg, rgba(255,255,255,0.9), rgba(255,255,255,0.4));
-    opacity:0.12;
-  }
-
-  /* CAR visuals */
-  .car{
-    width:78px;
-    height:42px;
-    position:absolute;
-    left:24px; /* aligned inside slot */
-    top:-90px; /* starts above */
-    transform-origin:center;
-    transition: top 0.8s cubic-bezier(.2,.9,.3,1), transform 0.5s;
-    filter: drop-shadow(0 8px 14px rgba(16,24,40,0.18));
-    z-index:18;
-    pointer-events:none;
-  }
-
-  .car.in {
-    top:54px; /* sits inside slot (lower) */
-    transform:translateY(0) scale(1);
-  }
-
-  .car.from-road{
-    /* when appearing from vertical road, start rotated slightly */
-    transform: translateY(-6px) rotate(-2deg) scale(0.98);
-  }
-
-  /* subtle wheel shadow under car */
-  .car .wheel-shadow{
-    position:absolute;
-    left:0;right:0;bottom:-6px;height:10px;
-    border-radius:50%;
-    background:rgba(0,0,0,0.18);
-    filter:blur(6px);
-    opacity:0.6;
-  }
-
-  /* nice small status dot bottom */
-  .status-dot{
-    width:12px;height:12px;border-radius:50%;
-    position:absolute;right:10px;bottom:10px;
-    box-shadow:0 6px 14px rgba(43,108,176,0.12);
-    border:2px solid white;
-  }
-  .slot.free .status-dot{ background:#39a56a } /* green */
-  .slot.occupied .status-dot{ background:#e04b4b } /* red */
-
-  /* info panel */
-  .info{
-    margin-top:6px;
-    display:flex;
-    gap:10px;
-    flex-wrap:wrap;
-    justify-content:center;
-    align-items:center;
-    width:100%;
-  }
-  .card{
-    background:var(--card);
-    padding:10px 14px;
-    border-radius:10px;
-    box-shadow:0 6px 18px rgba(15,23,42,0.06);
-    font-size:14px;
-  }
-
-  /* small screens adjustments */
-  @media (max-width:700px){
-    .slots-row{ padding:10px 8%; transform:translateY(-36px) }
-    .slot{ width:100px; height:150px }
-    .car{ left:14px; width:66px; height:36px }
-    .road-horizontal{ height:70px }
-    .road-vertical{ height:150px; width:56px }
-  }
-
-</style>
 </head>
 <body>
 
-<header>
-  <h1>Smart Parking — Clean UI</h1>
+<h2>SMART PARKING LIVE</h2>
 
-  <div class="top-meta">
-    <div style="min-width:86px; text-align:left">
-      Masa: <strong id="clock">--:--:--</strong>
-    </div>
-    <div style="min-width:86px; text-align:left">
-      Kosong: <strong id="emptyCount">0</strong>
-    </div>
-  </div>
-</header>
-
-<div class="container">
-  <div class="parking-area">
-
-    <!-- SLOTS (visual row) -->
-    <div class="slots-row" id="slotsRow">
-      <!-- slots inserted statically so JS can target them -->
-      <div id="slot1" class="slot free" aria-label="Slot 1">
-        <div class="slot-number">1</div>
-        <div class="slot-label">Slot 1</div>
-        <div class="status-dot"></div>
-      </div>
-
-      <div id="slot2" class="slot free" aria-label="Slot 2">
-        <div class="slot-number">2</div>
-        <div class="slot-label">Slot 2</div>
-        <div class="status-dot"></div>
-      </div>
-
-      <div id="slot3" class="slot free" aria-label="Slot 3">
-        <div class="slot-number">3</div>
-        <div class="slot-label">Slot 3</div>
-        <div class="status-dot"></div>
-      </div>
-
-      <div id="slot4" class="slot free" aria-label="Slot 4">
-        <div class="slot-number">4</div>
-        <div class="slot-label">Slot 4</div>
-        <div class="status-dot"></div>
-      </div>
-
-      <div id="slot5" class="slot free" aria-label="Slot 5">
-        <div class="slot-number">5</div>
-        <div class="slot-label">Slot 5</div>
-        <div class="status-dot"></div>
-      </div>
-    </div>
-
-    <!-- Horizontal road -->
-    <div class="road-horizontal" id="roadH">
-      <!-- we keep empty: purely design, dashed line from CSS -->
-    </div>
-
-    <!-- Vertical roads (connected visually under the horizontal road) -->
-    <div class="road-verticals" id="roadVs">
-      <div class="road-vertical" data-index="1">
-        <div class="arrow arrow-up"></div>
-      </div>
-      <div class="road-vertical" data-index="2">
-        <div class="arrow arrow-down"></div>
-      </div>
-      <div class="road-vertical" data-index="3">
-        <div class="arrow arrow-up"></div>
-      </div>
-    </div>
-
-    <div class="info" role="status" aria-live="polite">
-      <div class="card">Design: Ultra Minimal Clean</div>
-      <div class="card">Responsive • Smooth animation</div>
-    </div>
-
-  </div>
+<!-- PARKING SLOT -->
+<div class="parking-row">
+  <div id="slot1" class="slot"><div class="slot-label">Slot 1</div></div>
+  <div id="slot2" class="slot"><div class="slot-label">Slot 2</div></div>
+  <div id="slot3" class="slot"><div class="slot-label">Slot 3</div></div>
+  <div id="slot4" class="slot"><div class="slot-label">Slot 4</div></div>
+  <div id="slot5" class="slot"><div class="slot-label">Slot 5</div></div>
 </div>
 
-<script>
-/* ---------------------------
-  Behaviour:
-  - Poll Firebase JSON endpoint (as before)
-  - If a slot becomes "occupied" and no car exists, create a car element
-    that appears from above/road and animates into the slot.
-  - If it becomes "empty", animate out and remove.
-  --------------------------- */
+<!-- JALAN MELINTANG -->
+<div class="road-main">
+  <div class="dash"></div>
+</div>
 
-const FIREBASE_URL = "https://smart-parking-aee-default-rtdb.asia-southeast1.firebasedatabase.app/parking.json";
+<!-- JALAN MENEGAK (sambung) -->
+<div class="road-vertical-container">
+  <div class="road-vertical"><div class="arrow-up"></div></div>
+  <div class="road-vertical"><div class="arrow-down"></div></div>
+</div>
 
-/* keep small previous map to detect changes */
-let prev = {};
-
-/* update clock */
-function updateClock(){
-  const now = new Date();
-  document.getElementById("clock").textContent = now.toLocaleTimeString();
-}
-
-/* create car SVG element (clean minimal) */
-function makeCarSVG(){
-  const wrapper = document.createElement('div');
-  wrapper.className = 'car from-road';
-  wrapper.innerHTML = `
-    <svg viewBox="0 0 90 42" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
-      <defs>
-        <linearGradient id="g1" x1="0" x2="0" y1="0" y2="1">
-          <stop offset="0" stop-color="#ffffff" stop-opacity="0.95"/>
-          <stop offset="1" stop-color="#e6eefc" stop-opacity="0.95"/>
-        </linearGradient>
-        <filter id="soft" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="1.2" result="b"/>
-          <feOffset dx="0" dy="0" result="o"/>
-          <feMerge><feMergeNode in="o"/><feMergeNode in="SourceGraphic"/></feMerge>
-        </filter>
-      </defs>
-
-      <!-- body -->
-      <rect x="6" y="6" rx="8" ry="8" width="78" height="28" fill="url(#g1)" stroke="#cfdff4" stroke-width="1.2" filter="url(#soft)"/>
-      <!-- windows -->
-      <rect x="18" y="9" width="32" height="12" rx="2" fill="#cfe3ff"/>
-      <!-- wheels -->
-      <g fill="#20232a">
-        <circle cx="26" cy="34" r="4.4"/>
-        <circle cx="62" cy="34" r="4.4"/>
-      </g>
-      <!-- small highlights -->
-      <rect x="66" y="14" width="8" height="6" rx="1" fill="#ffd9a8" />
-    </svg>
-    <div class="wheel-shadow"></div>
-  `;
-  return wrapper;
-}
-
-/* append car into slot element and animate */
-function showCarInSlot(slotEl){
-  // if already has .car, do nothing
-  if (slotEl.querySelector('.car')) return;
-
-  const car = makeCarSVG();
-  // start position: slightly above visible area (from road)
-  car.style.top = (window.innerWidth < 700 ? '-115px' : '-120px');
-  slotEl.appendChild(car);
-
-  // small timeout to allow DOM insertion then animate to in position
-  requestAnimationFrame(()=> {
-    // remove 'from-road' after small delay to allow nicer approach
-    setTimeout(()=> { car.classList.remove('from-road'); }, 80);
-    setTimeout(()=> { car.classList.add('in'); }, 140);
-  });
-
-  // update classes (visual)
-  slotEl.classList.remove('free');
-  slotEl.classList.add('occupied');
-  const dot = slotEl.querySelector('.status-dot');
-  if (dot) dot.style.background = '#e04b4b';
-}
-
-/* remove car from slot with out animation */
-function removeCarFromSlot(slotEl){
-  const car = slotEl.querySelector('.car');
-  if (!car) {
-    // still update classes
-    slotEl.classList.remove('occupied');
-    slotEl.classList.add('free');
-    const dot = slotEl.querySelector('.status-dot');
-    if (dot) dot.style.background = '#39a56a';
-    return;
-  }
-  // animate up and fade
-  car.classList.remove('in');
-  car.style.transform = 'translateY(-6px) rotate(-3deg) scale(0.98)';
-  // after transition time remove
-  setTimeout(()=> {
-    if (car && car.remove) car.remove();
-  }, 700);
-
-  slotEl.classList.remove('occupied');
-  slotEl.classList.add('free');
-  const dot = slotEl.querySelector('.status-dot');
-  if (dot) dot.style.background = '#39a56a';
-}
-
-/* update one slot based on firebase status string */
-function updateSlotUI(id, status){
-  const el = document.getElementById(id);
-  if (!el) return;
-  if (status === 'occupied'){
-    showCarInSlot(el);
-  } else {
-    removeCarFromSlot(el);
-  }
-}
-
-/* main loader */
-async function loadData(){
-  try {
-    const res = await fetch(FIREBASE_URL, {cache:'no-store'});
-    if (!res.ok) throw new Error('fetch failed');
-    const data = await res.json();
-
-    // count empty
-    let empty = 0;
-    for (let i=1;i<=5;i++){
-      const key = 'slot'+i;
-      const status = (data && data[key] && data[key].status) ? data[key].status : 'empty';
-      if (status === 'empty') empty++;
-      updateSlotUI(key, status);
-
-      // store prev (not strictly required but kept)
-      prev[key] = status;
-    }
-    document.getElementById('emptyCount').textContent = empty;
-  } catch(err){
-    // fail silently but log
-    console.error('Failed to load data', err);
-  }
-}
-
-/* initial */
-updateClock();
-loadData();
-/* intervals */
-setInterval(updateClock, 1000);
-setInterval(loadData, 1200);
-
-</script>
+<!-- INFO PANEL -->
+<div id="infoPanel">
+  Masa: <span id="clock"></span><br>
+  Slot Kosong: <span id="emptyCount">0</span>
+</div>
 
 </body>
 </html>
