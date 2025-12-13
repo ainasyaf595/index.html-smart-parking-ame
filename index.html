@@ -3,6 +3,9 @@
 <head>
 <title>Smart Parking Live</title>
 
+<!-- QR CODE LIBRARY -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
 <style>
 body{
   font-family: Arial, sans-serif;
@@ -80,7 +83,7 @@ h2{
 .car.in{bottom:20px;}
 .car.out{bottom:-120px;}
 
-/* ROAD MAIN */
+/* ROAD */
 .road-main{
   width:96%;
   height:100px;
@@ -98,13 +101,13 @@ h2{
   left:7.5%;
 }
 
-/* VERTICAL ROADS */
+/* VERTICAL ROAD */
 .road-vertical-container{
   display:flex;
   justify-content:center;
   gap:40px;
   margin-top:-10px;
-  margin-bottom:50px;
+  margin-bottom:70px;
 }
 
 .road-vertical{
@@ -143,7 +146,6 @@ h2{
   position:absolute;
   left:0;
   bottom:0;
-  border-radius:3px;
 }
 .gate-arm{
   width:70px;
@@ -172,6 +174,22 @@ h2{
   border-radius:12px;
   border:3px solid white;
 }
+
+/* QR PANEL */
+#qrPanel{
+  position:fixed;
+  bottom:20px;
+  left:20px;
+  background:white;
+  padding:15px;
+  border-radius:12px;
+  border:3px solid #1a237e;
+  box-shadow:0 3px 10px rgba(0,0,0,.4);
+}
+#qrPanel h4{
+  margin:5px 0 10px;
+  color:#1a237e;
+}
 </style>
 
 <script>
@@ -180,41 +198,38 @@ async function loadData(){
   try{
     const res=await fetch(url);
     const data=await res.json();
-    let emptyCount=0;
+    let empty=0;
 
     for(let i=1;i<=5;i++){
       const id="slot"+i;
       const status=data[id].status;
-      if(status==="empty") emptyCount++;
+      if(status==="empty") empty++;
       updateSlot(id,status);
     }
-    document.getElementById("emptyCount").innerHTML=emptyCount;
-    updateGates(emptyCount);
+    document.getElementById("emptyCount").innerHTML=empty;
+    updateGates(empty);
   }catch(e){console.error(e);}
 }
 
 function updateSlot(id,status){
   const div=document.getElementById(id);
   div.style.background=status==="occupied"?"red":"green";
-  const existing=div.querySelector(".car");
+  const car=div.querySelector(".car");
 
-  if(status==="occupied" && !existing){
-    const car=document.createElement("img");
-    car.src="data:image/svg+xml;utf8,\
+  if(status==="occupied" && !car){
+    const img=document.createElement("img");
+    img.src="data:image/svg+xml;utf8,\
     <svg width='90' height='50' xmlns='http://www.w3.org/2000/svg'>\
     <rect x='5' y='5' width='80' height='40' rx='10' fill='#ffeb3b' stroke='black' stroke-width='3'/>\
-    <rect x='20' y='10' width='50' height='15' rx='4' fill='#bdbdbd'/>\
-    <rect x='22' y='28' width='45' height='10' rx='3' fill='#212121'/>\
     </svg>";
-    car.classList.add("car");
-    div.appendChild(car);
-    setTimeout(()=>car.classList.add("in"),30);
+    img.className="car";
+    div.appendChild(img);
+    setTimeout(()=>img.classList.add("in"),30);
   }
 
-  if(status==="empty" && existing){
-    existing.classList.remove("in");
-    existing.classList.add("out");
-    setTimeout(()=>existing.remove(),650);
+  if(status==="empty" && car){
+    car.classList.add("out");
+    setTimeout(()=>car.remove(),600);
   }
 }
 
@@ -227,8 +242,18 @@ function updateClock(){
   document.getElementById("clock").innerHTML=new Date().toLocaleTimeString();
 }
 
+/* GENERATE QR */
+function generateQR(){
+  new QRCode(document.getElementById("qrcode"),{
+    text: window.location.href,
+    width: 140,
+    height: 140
+  });
+}
+
 setInterval(loadData,1000);
 setInterval(updateClock,1000);
+window.onload=generateQR;
 </script>
 </head>
 
@@ -266,6 +291,11 @@ setInterval(updateClock,1000);
 <div id="infoPanel">
   Masa: <span id="clock"></span><br>
   Slot Kosong: <span id="emptyCount">0</span>
+</div>
+
+<div id="qrPanel">
+  <h4>Scan untuk Akses</h4>
+  <div id="qrcode"></div>
 </div>
 
 </body>
