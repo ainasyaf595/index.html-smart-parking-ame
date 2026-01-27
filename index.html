@@ -83,9 +83,9 @@ h2{
 .car.in{bottom:20px;}
 .car.out{bottom:-120px;}
 
-/* ROAD MELINTANG DEPAN PARKING */
+/* JALAN MELINTANG DEPAN PARKING */
 .road-main{
-  width:96%;
+  width:80%;
   height:100px;
   background:linear-gradient(#555,#2f2f2f);
   margin:5px auto 0;
@@ -101,57 +101,59 @@ h2{
   left:7.5%;
 }
 
-/* VERTICAL ROADS - MASUK & KELUAR */
+/* JALAN MASUK & KELUAR - BERSAMBUNG DENGAN MELINTANG */
 .road-vertical-container{
   display:flex;
-  justify-content:center; /* geser ke tengah */
-  gap:150px; /* jarak antara jalan masuk & keluar */
-  margin-top:30px;
-  margin-bottom:120px; /* ruang untuk QR panel */
+  justify-content:space-between; /* supaya masuk & keluar ada jarak tetap */
+  width:80%; /* samakan dengan jalan melintang */
+  margin:0 auto;
   position:relative;
+  margin-top:-20px; /* rapat dengan jalan melintang */
+  margin-bottom:120px; /* ruang untuk QR panel */
 }
 
 /* ROAD MASUK & KELUAR */
 .road-vertical{
-  width:80px;
-  height:180px;
+  width:60px;
+  height:160px;
   background:linear-gradient(#4a4a4a,#2e2e2e);
-  border-radius:18px;
-  box-shadow:inset 0 0 20px black;
+  border-radius:14px;
+  box-shadow:inset 0 0 15px black;
   position:relative;
 }
 
 /* ARROWS */
 .arrow-up,.arrow-down{
   width:0;height:0;
-  border-left:18px solid transparent;
-  border-right:18px solid transparent;
+  border-left:15px solid transparent;
+  border-right:15px solid transparent;
   position:absolute;
-  left:22px;
-  top:60px;
+  left:calc(50% - 15px);
+  top:50%;
+  transform:translateY(-50%);
 }
-.arrow-up{border-bottom:28px solid white;}
-.arrow-down{border-top:28px solid white;}
+.arrow-up{border-bottom:25px solid white;}
+.arrow-down{border-top:25px solid white;}
 
 /* GATE */
 .gate{
   position:absolute;
-  bottom:-55px;
+  bottom:-50px;
   left:50%;
   transform:translateX(-50%);
-  width:80px;
-  height:60px;
+  width:70px;
+  height:50px;
 }
 .gate-post{
   width:12px;
-  height:60px;
+  height:50px;
   background:#ffc107;
   position:absolute;
   left:0;
   bottom:0;
 }
 .gate-arm{
-  width:70px;
+  width:60px;
   height:8px;
   background:repeating-linear-gradient(
     45deg, red, red 10px, white 10px, white 20px
@@ -178,12 +180,11 @@ h2{
   border:3px solid white;
 }
 
-/* QR PANEL - TURUNKAN KE BAWAH */
+/* QR PANEL - BAWAH KIRI FIX */
 #qrPanel{
   position:fixed;
-  bottom: -20px; /* bawah sikit dari skrin */
-  left:50%;
-  transform:translateX(-50%);
+  bottom:20px;
+  left:20px;
   background:white;
   padding:15px;
   border-radius:12px;
@@ -279,7 +280,7 @@ window.onload=generateQR;
 <!-- Jalan melintang depan parking tetap ada -->
 <div class="road-main"><div class="dash"></div></div>
 
-<!-- Jalan masuk & keluar bawah - lebih ke tengah -->
+<!-- Jalan masuk & keluar bawah - bersambung dengan jalan melintang -->
 <div class="road-vertical-container">
   <!-- Jalan masuk bawah kiri -->
   <div class="road-vertical">
