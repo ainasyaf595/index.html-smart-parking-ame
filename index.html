@@ -104,9 +104,10 @@ h2{
 /* VERTICAL ROADS - MASUK & KELUAR */
 .road-vertical-container{
   display:flex;
-  justify-content:space-between; /* kiri & kanan */
+  justify-content:center; /* geser ke tengah */
+  gap:150px; /* jarak antara jalan masuk & keluar */
   margin-top:30px;
-  margin-bottom:70px;
+  margin-bottom:120px; /* ruang untuk QR panel */
   position:relative;
 }
 
@@ -177,11 +178,12 @@ h2{
   border:3px solid white;
 }
 
-/* QR PANEL */
+/* QR PANEL - TURUNKAN KE BAWAH */
 #qrPanel{
   position:fixed;
-  bottom:20px;
-  left:20px;
+  bottom: -20px; /* bawah sikit dari skrin */
+  left:50%;
+  transform:translateX(-50%);
   background:white;
   padding:15px;
   border-radius:12px;
@@ -277,7 +279,7 @@ window.onload=generateQR;
 <!-- Jalan melintang depan parking tetap ada -->
 <div class="road-main"><div class="dash"></div></div>
 
-<!-- Jalan masuk & keluar bawah -->
+<!-- Jalan masuk & keluar bawah - lebih ke tengah -->
 <div class="road-vertical-container">
   <!-- Jalan masuk bawah kiri -->
   <div class="road-vertical">
