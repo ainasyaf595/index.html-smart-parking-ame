@@ -3,7 +3,6 @@
 <head>
 <title>Smart Parking Live</title>
 
-<!-- QR CODE LIBRARY -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <style>
@@ -14,22 +13,19 @@ body{
   text-align:center;
 }
 
-/* HEADER */
 h2{
   background:#1a237e;
   color:white;
   padding:15px;
   margin:0;
-  box-shadow:0 3px 5px rgba(0,0,0,.4);
 }
 
-/* PARKING SLOT */
+/* ================= PARKING ================= */
 .parking-row{
   display:flex;
   justify-content:center;
-  flex-wrap:wrap;
   gap:15px;
-  margin-top:20px;
+  margin-top:25px;
 }
 
 .slot{
@@ -39,30 +35,6 @@ h2{
   border-radius:6px;
   position:relative;
   box-shadow:inset 0 0 12px black;
-  border:4px solid #ffffff88;
-}
-
-@media(max-width:600px){
-  .slot{width:110px;height:160px;}
-}
-
-.slot::before{
-  content:"";
-  position:absolute;
-  bottom:0;
-  left:0;
-  right:0;
-  height:6px;
-  background:white;
-}
-.slot::after{
-  content:"";
-  position:absolute;
-  top:0;
-  right:0;
-  width:6px;
-  height:100%;
-  background:white;
 }
 
 .slot-label{
@@ -77,93 +49,60 @@ h2{
   height:45px;
   position:absolute;
   bottom:-100px;
-  left:25px;
+  left:30px;
   transition:.6s;
 }
 .car.in{bottom:20px;}
 .car.out{bottom:-120px;}
 
-/* ROAD */
-.road-main{
-  width:96%;
-  height:100px;
-  background:linear-gradient(#555,#2f2f2f);
-  margin:5px auto 0;
-  border-radius:14px;
-  box-shadow:inset 0 0 25px black;
+/* ================= FRONT ROAD ================= */
+.front-road-container{
   position:relative;
-}
-.road-main .dash{
-  border-top:8px dashed white;
-  width:85%;
-  position:absolute;
-  top:46px;
-  left:7.5%;
+  width:100%;
+  height:120px;
+  margin-top:10px;
 }
 
-/* VERTICAL ROAD */
-.road-vertical-container{
-  display:flex;
-  justify-content:center;
-  gap:40px;
-  margin-top:-10px;
-  margin-bottom:70px;
-}
-
-.road-vertical{
-  width:80px;
-  height:180px;
-  background:linear-gradient(#4a4a4a,#2e2e2e);
+.front-road{
+  width:140px;
+  height:80px;
+  background:linear-gradient(#555,#2f2f2f);
   border-radius:18px;
   box-shadow:inset 0 0 20px black;
-  position:relative;
+  position:absolute;
+  bottom:0;
 }
 
-.arrow-up,.arrow-down{
+/* MASUK kiri */
+#roadIn{
+  left:10%;
+}
+
+/* KELUAR kanan */
+#roadOut{
+  right:10%;
+}
+
+/* ARROW */
+.arrow{
   width:0;height:0;
   border-left:18px solid transparent;
   border-right:18px solid transparent;
   position:absolute;
-  left:22px;
-  top:60px;
-}
-.arrow-up{border-bottom:28px solid white;}
-.arrow-down{border-top:28px solid white;}
-
-/* GATE */
-.gate{
-  position:absolute;
-  bottom:-55px;
-  left:50%;
-  transform:translateX(-50%);
-  width:80px;
-  height:60px;
-}
-.gate-post{
-  width:12px;
-  height:60px;
-  background:#ffc107;
-  position:absolute;
-  left:0;
-  bottom:0;
-}
-.gate-arm{
-  width:70px;
-  height:8px;
-  background:repeating-linear-gradient(
-    45deg, red, red 10px, white 10px, white 20px
-  );
-  position:absolute;
-  left:10px;
-  top:10px;
-  transform-origin:left center;
-  transition:.6s;
-}
-.gate.open .gate-arm{
-  transform:rotate(-75deg);
+  left:52px;
 }
 
-/* INFO PANEL */
+.arrow.in{
+  border-bottom:30px solid white;
+  top:20px;
+}
+
+.arrow.out{
+  border-top:30px solid white;
+  bottom:20px;
+}
+
+/* INFO */
 #infoPanel{
   position:fixed;
   bottom:20px;
@@ -172,10 +111,8 @@ h2{
   color:white;
   padding:15px;
   border-radius:12px;
-  border:3px solid white;
 }
 
-/* QR PANEL */
 #qrPanel{
   position:fixed;
   bottom:20px;
@@ -183,51 +120,35 @@ h2{
   background:white;
   padding:15px;
   border-radius:12px;
-  border:3px solid #1a237e;
-  box-shadow:0 3px 10px rgba(0,0,0,.4);
-}
-#qrPanel h4{
-  margin:5px 0 10px;
-  color:#1a237e;
 }
 </style>
 
 <script>
 async function loadData(){
   const url="https://smart-parking-aee-default-rtdb.asia-southeast1.firebasedatabase.app/parking.json";
-  try{
-    const res=await fetch(url);
-    const data=await res.json();
-    let empty=0;
+  const res=await fetch(url);
+  const data=await res.json();
+  let empty=0;
 
-    for(let i=1;i<=5;i++){
-      const id="slot"+i;
-      const status=data[id].status;
-      if(status==="empty") empty++;
-      updateSlot(id,status);
-    }
-    document.getElementById("emptyCount").innerHTML=empty;
-    updateGates(empty);
-  }catch(e){console.error(e);}
+  for(let i=1;i<=5;i++){
+    const id="slot"+i;
+    const status=data[id].status;
+    if(status==="empty") empty++;
+    updateSlot(id,status);
+  }
+  document.getElementById("emptyCount").innerHTML=empty;
 }
 
 function updateSlot(id,status){
-  const div=document.getElementById(id);
-  div.style.background=status==="occupied"?"red":"green";
-  const car=div.querySelector(".car");
+  const slot=document.getElementById(id);
+  slot.style.background=status==="occupied"?"red":"green";
+  const car=slot.querySelector(".car");
 
   if(status==="occupied" && !car){
     const img=document.createElement("img");
-    const svgCar = `
-<svg xmlns="http://www.w3.org/2000/svg" width="90" height="50">
-  <rect x="5" y="5" width="80" height="40" rx="10"
-        fill="#ffeb3b" stroke="black" stroke-width="3"/>
-</svg>
-`;
-
-img.src = "data:image/svg+xml;utf8," + encodeURIComponent(svgCar);
+    img.src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='90' height='50'><rect x='5' y='5' width='80' height='40' rx='10' fill='%23ffeb3b' stroke='black' stroke-width='3'/></svg>";
     img.className="car";
-    div.appendChild(img);
+    slot.appendChild(img);
     setTimeout(()=>img.classList.add("in"),30);
   }
 
@@ -237,16 +158,10 @@ img.src = "data:image/svg+xml;utf8," + encodeURIComponent(svgCar);
   }
 }
 
-function updateGates(empty){
-  document.getElementById("gateIn").classList.toggle("open",empty>0);
-  document.getElementById("gateOut").classList.add("open");
-}
-
 function updateClock(){
   document.getElementById("clock").innerHTML=new Date().toLocaleTimeString();
 }
 
-/* GENERATE QR */
 function generateQR(){
   new QRCode(document.getElementById("qrcode"),{
     text: window.location.href,
@@ -255,15 +170,17 @@ function generateQR(){
   });
 }
 
-setInterval(loadData,1000);
+setInterval(loadData,800);
 setInterval(updateClock,1000);
 window.onload=generateQR;
 </script>
 </head>
 
 <body>
+
 <h2>SMART PARKING LIVE</h2>
 
+<!-- PARKING -->
 <div class="parking-row">
   <div id="slot1" class="slot"><div class="slot-label">Slot 1</div></div>
   <div id="slot2" class="slot"><div class="slot-label">Slot 2</div></div>
@@ -272,23 +189,14 @@ window.onload=generateQR;
   <div id="slot5" class="slot"><div class="slot-label">Slot 5</div></div>
 </div>
 
-<div class="road-main"><div class="dash"></div></div>
-
-<div class="road-vertical-container">
-  <div class="road-vertical">
-    <div class="arrow-up"></div>
-    <div class="gate open" id="gateIn">
-      <div class="gate-post"></div>
-      <div class="gate-arm"></div>
-    </div>
+<!-- JALAN DEPAN -->
+<div class="front-road-container">
+  <div class="front-road" id="roadIn">
+    <div class="arrow in"></div>
   </div>
 
-  <div class="road-vertical">
-    <div class="arrow-down"></div>
-    <div class="gate open" id="gateOut">
-      <div class="gate-post"></div>
-      <div class="gate-arm"></div>
-    </div>
+  <div class="front-road" id="roadOut">
+    <div class="arrow out"></div>
   </div>
 </div>
 
